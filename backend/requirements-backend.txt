@@ -1,0 +1,30 @@
+# AI Campus Management System - Backend Requirements
+
+This file lists the required packages for the FastAPI-based backend of the TechPhantom Campus Management System.
+
+## Core Dependencies
+- **fastapi**: Modern, fast (high-performance), web framework for building APIs with Python.
+- **uvicorn**: Lightning-fast ASGI server implementation, used to serve the FastAPI app.
+- **sqlalchemy**: SQL toolkit and Object-Relational Mapper (ORM) for database interactions.
+- **pydantic**: Data validation and settings management using Python type annotations.
+
+## AI & Computer Vision Dependencies
+- **face_recognition**: Library for recognizing and manipulating faces (requires dlib).
+- **ultralytics**: Implementation of YOLOv8 for person detection and real-time tracking.
+- **opencv-python**: Library for real-time computer vision tasks and image processing.
+- **numpy**: Fundamental package for scientific computing with Python, used for handling image arrays and encoding data.
+
+## Security & Utilities
+- **python-multipart**: Required for handling file uploads (e.g., student face photos).
+- **python-jose[cryptography]**: JSON Web Token (JWT) implementation for secure authentication.
+- **passlib[bcrypt]**: Password hashing library for secure password storage.
+- **bcrypt**: Used for securing password hashes (pinned to v4.0.1 for compatibility).
+
+## Installation
+To install these dependencies, navigate to the `backend` directory, activate your virtual environment, and run:
+```bash
+pip install -r requirements.txt
+```
+
+> [!NOTE]
+> Installing `face_recognition` on Windows requires CMake and Visual Studio C++ Build Tools. If these are not available, the backend will automatically fallback to OpenCV-based detection as defined in `face_utils.py`.
