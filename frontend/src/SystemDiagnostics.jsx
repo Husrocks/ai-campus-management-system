@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import api from './api';
 import { Image, User, RefreshCw, ArrowLeft } from 'lucide-react';
 
-const DeveloperGallery = ({ onBack }) => {
+const SystemDiagnostics = ({ onBack }) => {
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -104,4 +104,4 @@ const DeveloperGallery = ({ onBack }) => {
   );
 };
 
-export default DeveloperGallery;
+export default SystemDiagnostics;

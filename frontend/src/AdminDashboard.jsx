@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import DeveloperGallery from './DeveloperGallery';
+import SystemDiagnostics from './SystemDiagnostics';
 import { BarChart2, ClipboardList, GraduationCap, BookOpen, LogOut, Camera, Trash2, Download, CheckCircle2, XCircle, TrendingUp, Users, Activity, User, Upload } from 'lucide-react';
 import { useAuth } from './AuthContext';
 import api from './api';
@@ -810,10 +810,10 @@ const AdminDashboard = ({ onOpenKiosk }) => {
           </div>
         )}
 
-        {/* DEVELOPER VAULT */}
+        {/* SYSTEM DIAGNOSTICS */}
         {activeTab === 'developer-vault' && (
           <div className="animate-in">
-            <DeveloperGallery onBack={() => setActiveTab('overview')} />
+            <SystemDiagnostics onBack={() => setActiveTab('overview')} />
           </div>
         )}
 
