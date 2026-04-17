@@ -19,7 +19,18 @@ const LiveAttendance = ({ sessionId, onClose }) => {
   useEffect(() => {
     if (!sessionId) return;
 
-    const wsUrl = API_BASE.replace(/^http/, 'ws') + '/ws/attendance/' + sessionId;
+    // More robust WebSocket URL construction
+    let wsUrl;
+    if (API_BASE.startsWith('http')) {
+      wsUrl = API_BASE.replace(/^http/, 'ws') + '/ws/attendance/' + sessionId;
+    } else {
+      // Fallback for relative URLs
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const host = API_BASE.includes('://') ? API_BASE.split('://')[1] : window.location.host;
+      wsUrl = `${protocol}//${host}/ws/attendance/${sessionId}`;
+    }
+    
+    console.log("Attempting WebSocket connection to:", wsUrl);
     const ws = new WebSocket(wsUrl);
     wsRef.current = ws;
 
