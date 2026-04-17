@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Depends, UploadFile, File, Form, HTTPException, WebSocket, WebSocketDisconnect, Query
+from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import func, and_
@@ -14,6 +15,9 @@ from auth import (
     get_current_user, require_admin, require_student
 )
 import face_utils
+import os
+import os
+import uuid
 
 # Create tables
 models.Base.metadata.create_all(bind=engine)
@@ -94,11 +98,20 @@ class AdminStudentCreate(BaseModel):
 
 class AdminStudentUpdate(BaseModel):
     full_name: Optional[str] = None
-    roll_number: Optional[str] = None
-    email: Optional[str] = None
-    department: Optional[str] = None
-    phone: Optional[str] = None
     course_ids: Optional[List[int]] = None
+
+# Setup upload directories
+UPLOAD_DIR = "uploads/profiles"
+os.makedirs(UPLOAD_DIR, exist_ok=True)
+
+# Mount static files
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+
+
+class ProfileUpdateDetailed(BaseModel):
+    full_name: Optional[str] = None
+    email: Optional[str] = None
+    password: Optional[str] = None
 
 
 # ==========================================
@@ -179,7 +192,8 @@ def get_me(current_user: models.User = Depends(get_current_user)):
         "id": current_user.id,
         "email": current_user.email,
         "full_name": current_user.full_name,
-        "role": current_user.role
+        "role": current_user.role,
+        "profile_picture": current_user.profile_picture
     }
     if current_user.role == "student" and current_user.student_profile:
         sp = current_user.student_profile
@@ -191,6 +205,78 @@ def get_me(current_user: models.User = Depends(get_current_user)):
             "has_face": sp.face_encoding is not None
         }
     return result
+
+
+@app.put("/api/auth/profile")
+def update_profile(req: ProfileUpdateDetailed, current_user: models.User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Update current user's profile info (name, email, password)."""
+    if req.full_name:
+        current_user.full_name = req.full_name
+    
+    if req.email:
+        # Check uniqueness
+        existing = db.query(models.User).filter(models.User.email == req.email, models.User.id != current_user.id).first()
+        if existing:
+            raise HTTPException(status_code=400, detail="Email already taken")
+        current_user.email = req.email
+        
+    if req.password:
+        if len(req.password) < 6:
+            raise HTTPException(status_code=400, detail="Password must be at least 6 characters")
+        current_user.password_hash = hash_password(req.password)
+        
+    db.commit()
+    return {"message": "Profile updated successfully"}
+
+
+@app.post("/api/auth/profile/picture")
+async def upload_profile_picture(
+    file: UploadFile = File(...),
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Upload/Update profile picture."""
+    # Validate file type
+    if not file.content_type.startswith("image/"):
+        raise HTTPException(status_code=400, detail="File must be an image")
+    
+    # Generate unique filename
+    ext = os.path.splitext(file.filename)[1] or ".jpg"
+    filename = f"{uuid.uuid4()}{ext}"
+    filepath = os.path.join(UPLOAD_DIR, filename)
+    
+    # Save to disk
+    content = await file.read()
+    with open(filepath, "wb") as f:
+        f.write(content)
+        
+    # Update DB (relative path for serving)
+    current_user.profile_picture = f"/uploads/profiles/{filename}"
+    db.commit()
+    
+    return {"message": "Profile picture updated", "url": current_user.profile_picture}
+
+
+@app.delete("/api/auth/profile/picture")
+def delete_profile_picture(current_user: models.User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Delete current user's profile picture."""
+    if current_user.profile_picture:
+        # Construct absolute path to delete file
+        # current_user.profile_picture is like "/uploads/profiles/uuid.jpg"
+        # We need to strip the leading slash if it exists
+        rel_path = current_user.profile_picture.lstrip("/")
+        abs_path = os.path.join(os.getcwd(), rel_path)
+        
+        if os.path.exists(abs_path):
+            try:
+                os.remove(abs_path)
+            except Exception as e:
+                print(f"Error deleting file: {e}")
+                
+        current_user.profile_picture = None
+        db.commit()
+        
+    return {"message": "Profile picture deleted"}
 
 
 # ==========================================
@@ -757,7 +843,7 @@ async def live_attendance_stream(websocket: WebSocket):
     try:
         all_students = db.query(models.Student).filter(
             models.Student.face_encoding.isnot(None)
-        ).options(joinedload(models.Student.user)).all()
+        ).options(joinedload(models.Student.user), joinedload(models.Student.courses)).all()
 
         if not all_students:
             await websocket.send_json({
@@ -768,7 +854,7 @@ async def live_attendance_stream(websocket: WebSocket):
             return
 
         known_encodings = [np.frombuffer(s.face_encoding, dtype=np.float64) for s in all_students]
-        last_sync = datetime.now(timezone.utc)
+        last_sync = datetime.now()
 
         await websocket.send_json({
             "status": "ready",
@@ -778,19 +864,21 @@ async def live_attendance_stream(websocket: WebSocket):
 
         from datetime import date
         today = date.today()
-        today_start = datetime.combine(today, datetime.min.time()).replace(tzinfo=timezone.utc)
+        today_start = datetime.combine(today, datetime.min.time())
 
         while True:
             # Periodically reload encodings (every 60 seconds) to avoid stale data
-            now = datetime.now(timezone.utc)
+            now = datetime.now()
             if (now - last_sync).total_seconds() > 60:
                 all_students = db.query(models.Student).filter(
                     models.Student.face_encoding.isnot(None)
-                ).options(joinedload(models.Student.user)).all()
+                ).options(joinedload(models.Student.user), joinedload(models.Student.courses)).all()
                 known_encodings = [np.frombuffer(s.face_encoding, dtype=np.float64) for s in all_students]
                 last_sync = now
 
             msg = await websocket.receive()
+            if msg["type"] == "websocket.disconnect":
+                break
 
             if msg.get("text") is not None:
                 data = json.loads(msg["text"])
@@ -862,7 +950,7 @@ async def live_attendance_stream(websocket: WebSocket):
                     models.AttendanceRecord.student_id == matched_student.id
                 ).order_by(models.AttendanceRecord.timestamp.desc()).first()
 
-                now = datetime.now(timezone.utc)
+                now = datetime.now()
                 is_cooldown = False
                 if last_record and last_record.timestamp >= today_start:
                     time_since = (now - last_record.timestamp).total_seconds()
