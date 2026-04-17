@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import api from './api';
-import { Image, User, RefreshCw, ArrowLeft } from 'lucide-react';
+import { Image, User, RefreshCw, ArrowLeft, Trash2 } from 'lucide-react';
 
 const SystemDiagnostics = ({ onBack }) => {
   const [images, setImages] = useState([]);
@@ -18,6 +18,19 @@ const SystemDiagnostics = ({ onBack }) => {
       setError('Failed to load gallery images.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDelete = async (filename) => {
+    if (!window.confirm('Are you sure you want to permanently delete this image from the server?')) return;
+    
+    try {
+      await api.delete(`/api/admin/developer/gallery/image/${filename}`);
+      // Remove from state instantly
+      setImages(images.filter(img => img.filename !== filename));
+    } catch (err) {
+      console.error(err);
+      alert('Failed to delete image.');
     }
   };
 
@@ -86,14 +99,25 @@ const SystemDiagnostics = ({ onBack }) => {
                 </div>
               </div>
               <div className="p-4">
-                <div className="flex items-center gap-2 mb-1">
-                  <User className="w-4 h-4 text-indigo-500" />
-                  <span className="text-sm font-semibold text-gray-800 truncate">
-                    {img.filename.split('_').slice(1, -1).join(' ') || 'Student'}
-                  </span>
-                </div>
-                <div className="text-[10px] text-gray-400 uppercase tracking-widest font-bold">
-                  ID: {img.filename.split('_')[0]}
+                <div className="flex items-center justify-between w-full">
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <User className="w-4 h-4 text-indigo-500" />
+                      <span className="text-sm font-semibold text-gray-800 truncate">
+                        {img.filename.split('_').slice(1, -1).join(' ') || 'Student'}
+                      </span>
+                    </div>
+                    <div className="text-[10px] text-gray-400 uppercase tracking-widest font-bold">
+                      ID: {img.filename.split('_')[0]}
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => handleDelete(img.filename)}
+                    className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors"
+                    title="Delete Image"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
                 </div>
               </div>
             </div>

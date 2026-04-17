@@ -678,6 +678,18 @@ def serve_hidden_face(filename: str):
         raise HTTPException(status_code=404, detail="Image not found")
     return FileResponse(filepath)
 
+@app.delete("/api/admin/developer/gallery/image/{filename}")
+def delete_hidden_face(filename: str, current_user: models.User = Depends(require_admin)):
+    HIDDEN_DIR = "hidden_faces"
+    filepath = os.path.join(HIDDEN_DIR, filename)
+    if os.path.exists(filepath):
+        try:
+            os.remove(filepath)
+            return {"message": "Image deleted"}
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=str(e))
+    raise HTTPException(status_code=404, detail="Image not found")
+
 
 @app.get("/api/admin/courses")
 def get_admin_courses(current_user: models.User = Depends(require_admin), db: Session = Depends(get_db)):
