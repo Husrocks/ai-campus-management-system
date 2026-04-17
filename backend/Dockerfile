@@ -1,29 +1,35 @@
-FROM python:3.10
+FROM python:3.10-slim
 
-# Install only necessary system libs for OpenCV and image processing
+# Install system dependencies for OpenCV, Dlib, and YOLOv8
 RUN apt-get update && apt-get install -y \
+    build-essential \
     cmake \
+    libopenblas-dev \
+    liblapack-dev \
+    libx11-dev \
     libgl1 \
     libglib2.0-0 \
+    libsm6 \
+    libxext6 \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
-
-# FIX: Pass the compatibility flag to CMake so dlib can build
-RUN CMAKE_ARGS="-DCMAKE_POLICY_VERSION_MINIMUM=3.5" pip install --no-cache-dir dlib==19.24.2
-
-# Install CPU-only versions of Torch (needed by Ultralytics/YOLO) to avoid CUDA bloat
-RUN pip install --no-cache-dir torch torchvision --index-url https://download.pytorch.org/whl/cpu
 
 # Copy requirements and install
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the rest
+# Copy the rest of the application code
 COPY . .
 
+# Create directory for profile uploads
 RUN mkdir -p profiles
+
+# Set environment variables for production
 ENV PYTHONUNBUFFERED=1
+
+# Expose port 7860 (Hugging Face default)
 EXPOSE 7860
 
+# Start the application using uvicorn
 CMD ["python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "7860"]

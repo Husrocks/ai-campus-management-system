@@ -2,11 +2,11 @@ fastapi
 uvicorn
 sqlalchemy
 face_recognition
-opencv-python
+opencv-python-headless
 python-multipart
 numpy
 pydantic
-ultralytics
+# ultralytics (Commented for Render 512MB RAM compatibility)
 python-jose[cryptography]
 passlib[bcrypt]
 bcrypt==4.0.1
