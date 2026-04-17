@@ -14,4 +14,4 @@ jobs:
       - name: Push to hub
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
-        run: git push --force https://Husrocks:$HF_TOKEN@huggingface.co/spaces/jimmy21ki09/ai-campus-api main
+        run: git push --force https://Husrocks:$HF_TOKEN@huggingface.co/spaces/Jimmy21ki09/ai-campus-api main
