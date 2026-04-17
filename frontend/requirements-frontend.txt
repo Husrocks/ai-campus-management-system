@@ -1,0 +1,24 @@
+# AI Campus Management System - Frontend Requirements
+
+This file lists the required packages for the React-based frontend of the TechPhantom Campus Management System.
+
+## Core Dependencies
+- **react** (^19.2.4): Core library for building the user interface.
+- **react-dom** (^19.2.4): Entry point to the DOM and server renderers for React.
+- **axios** (^1.15.0): Promise-based HTTP client for making API requests to the backend.
+
+## UI & Functional Dependencies
+- **lucide-react** (^0.454.0): Icon library used across the dashboards (Admin and Student).
+- **react-webcam** (^7.2.0): Component for capturing face images for registration and attendance scanning.
+- **recharts** (^2.13.0): Charting library used for attendance statistics and analytics on the Admin Dashboard.
+
+## Development Tools
+- **vite**: Build tool and development server.
+- **eslint**: Pluggable linting utility for JavaScript and React.
+- **@vitejs/plugin-react**: Official Vite plugin for React support.
+
+## Installation
+To install these dependencies, navigate to the `frontend` directory and run:
+```bash
+npm install
+```
