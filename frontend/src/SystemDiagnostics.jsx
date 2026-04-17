@@ -10,7 +10,7 @@ const SystemDiagnostics = ({ onBack }) => {
   const fetchImages = async () => {
     setLoading(true);
     try {
-      const response = await api.get('/admin/developer/gallery');
+      const response = await api.get('/api/admin/developer/gallery');
       setImages(response.data);
       setError('');
     } catch (err) {
