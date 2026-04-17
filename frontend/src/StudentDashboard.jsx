@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { BarChart2, ClipboardList, BookOpen, User, LogOut, Camera, Smile, CheckCircle2 } from 'lucide-react';
+import { BarChart2, ClipboardList, BookOpen, User, LogOut, Camera, Smile, CheckCircle2, Upload } from 'lucide-react';
 import { useAuth } from './AuthContext';
 import api from './api';
 import Webcam from 'react-webcam';
@@ -16,6 +16,8 @@ const StudentDashboard = () => {
   const [faceUploading, setFaceUploading] = useState(false);
   const webcamRef = useRef(null);
   const [showFaceModal, setShowFaceModal] = useState(false);
+  const [profileForm, setProfileForm] = useState({ full_name: user?.full_name || '', email: user?.email || '', password: '', confirmPassword: '' });
+  const [savingProfile, setSavingProfile] = useState(false);
 
   const showToast = (msg, type = 'success') => {
     setToast({ msg, type });
@@ -85,6 +87,62 @@ const StudentDashboard = () => {
     }
   };
 
+  const handleUpdateProfile = async (e) => {
+    e.preventDefault();
+    if (profileForm.password && profileForm.password !== profileForm.confirmPassword) {
+      return showToast('Passwords do not match', 'error');
+    }
+    setSavingProfile(true);
+    try {
+      await api.put('/api/auth/profile', {
+        full_name: profileForm.full_name,
+        email: profileForm.email,
+        password: profileForm.password || undefined
+      });
+      showToast('Profile updated!');
+      window.location.reload(); 
+    } catch (err) {
+      showToast(err.response?.data?.detail || 'Update failed', 'error');
+    } finally {
+      setSavingProfile(false);
+    }
+  };
+
+  const handleProfilePictureUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    setSavingProfile(true);
+    try {
+      const res = await api.post('/api/auth/profile/picture', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      showToast('Profile picture updated!');
+      window.location.reload();
+    } catch (err) {
+      showToast(err.response?.data?.detail || 'Upload failed', 'error');
+    } finally {
+      setSavingProfile(false);
+    }
+  };
+
+  const handleDeleteProfilePicture = async () => {
+    if (!window.confirm('Are you sure you want to remove your profile picture?')) return;
+    setSavingProfile(true);
+    try {
+      await api.delete('/api/auth/profile/picture');
+      showToast('Profile picture removed!');
+      window.location.reload();
+    } catch (err) {
+      showToast(err.response?.data?.detail || 'Delete failed', 'error');
+    } finally {
+      setSavingProfile(false);
+    }
+  };
+
   if (!profile) return <div className="spinner" style={{ margin: '100px auto' }}></div>;
 
   const initials = user?.full_name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || 'ST';
@@ -129,8 +187,15 @@ const StudentDashboard = () => {
            <div style={{ display: 'flex', gap: 24, fontSize: '0.9rem', color: 'var(--text-muted)' }}>
               <div><strong style={{color: 'var(--text-primary)'}}>Student Portal</strong><br/>{new Date().toLocaleDateString()}</div>
            </div>
-           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-              <div className="user-avatar" style={{width: 32, height: 32}}>{initials}</div>
+           <div 
+             style={{ display: 'flex', alignItems: 'center', gap: 16, cursor: 'pointer' }}
+             onClick={() => setActiveTab('profile')}
+           >
+              {user?.profile_picture ? (
+                <img src={api.defaults.baseURL + user.profile_picture} alt="Profile" style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--primary-light)' }} />
+              ) : (
+                <div className="user-avatar" style={{width: 32, height: 32}}>{initials}</div>
+              )}
               <span style={{ fontWeight: 600 }}>{user?.full_name}</span>
            </div>
         </div>
@@ -276,42 +341,103 @@ const StudentDashboard = () => {
 
         {/* PROFILE */}
         {activeTab === 'profile' && (
-          <div className="animate-in card" style={{ padding: 32, maxWidth: 600 }}>
-             <h3 style={{ marginBottom: 24 }}>Profile Settings</h3>
-             <div style={{ display: 'flex', gap: 24, marginBottom: 32 }}>
-                <div className="user-avatar" style={{width: 80, height: 80, fontSize: '2rem', background: 'var(--primary)'}}>
-                   {initials}
-                </div>
-                <div>
-                   <h2 style={{ marginBottom: 4 }}>{profile.full_name}</h2>
-                   <p style={{ color: 'var(--text-muted)' }}>{profile.email}</p>
-                </div>
-             </div>
-             
-             <div className="grid grid-2" style={{ marginBottom: 32 }}>
-                <div className="input-group">
-                   <label>Roll Number</label>
-                   <input className="input" defaultValue={profile.roll_number} disabled />
-                </div>
-                <div className="input-group">
-                   <label>Department</label>
-                   <input className="input" defaultValue={profile.department} disabled />
-                </div>
-             </div>
+          <div className="animate-in flex-col gap-lg" style={{ maxWidth: 800 }}>
+             <div className="card" style={{ padding: 40 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'minmax(150px, 1fr) 2fr', gap: 40, alignItems: 'flex-start' }}>
+                   {/* Avatar Section */}
+                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
+                      <div style={{ position: 'relative' }}>
+                        {user?.profile_picture ? (
+                          <img src={api.defaults.baseURL + user.profile_picture} alt="Profile" style={{ width: 140, height: 140, borderRadius: '50%', objectFit: 'cover', border: '4px solid var(--border-light)' }} />
+                        ) : (
+                          <div style={{ width: 140, height: 140, borderRadius: '50%', background: 'var(--primary)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '3rem', fontWeight: 800 }}>
+                            {initials}
+                          </div>
+                        )}
+                        <label htmlFor="profile-upload" style={{ position: 'absolute', bottom: 5, right: 5, background: 'var(--success)', color: 'white', width: 36, height: 36, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', border: '3px solid white', boxShadow: 'var(--shadow-md)' }}>
+                           <Camera size={16} />
+                           <input id="profile-upload" type="file" hidden accept="image/*" onChange={handleProfilePictureUpload} disabled={savingProfile} />
+                        </label>
+                        {user?.profile_picture && (
+                          <button 
+                            type="button"
+                            onClick={handleDeleteProfilePicture}
+                            style={{ position: 'absolute', top: 5, right: 5, background: 'var(--danger)', color: 'white', width: 30, height: 30, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', border: '2px solid white', boxShadow: 'var(--shadow-md)', padding: 0 }}
+                            title="Remove Picture"
+                          >
+                             <Trash2 size={14} />
+                          </button>
+                        )}
+                      </div>
+                      <div style={{ textAlign: 'center' }}>
+                         <h3 style={{ marginBottom: 4 }}>{user?.full_name}</h3>
+                         <span className="badge badge-primary">{user?.role}</span>
+                      </div>
+                   </div>
 
-             <div style={{ padding: 24, border: '1px solid var(--border)', borderRadius: 12, background: 'var(--bg-input)' }}>
-                <h4 style={{ marginBottom: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
-                   Face Recognition Data
-                   {profile.has_face && <span style={{ color: 'var(--success)', display: 'flex' }}><CheckCircle2 size={20} /></span>}
-                </h4>
-                <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: 16 }}>
-                   {profile.has_face 
-                      ? 'Your face profile is currently active. You can update it if you are having issues.'
-                      : 'You have not registered your face. Plase do so to enable automatic attendance.'}
-                </p>
-                <button className={`btn ${profile.has_face ? 'btn-ghost' : 'btn-primary'}`} onClick={() => setShowFaceModal(true)}>
-                   {profile.has_face ? <span style={{display:'flex', gap:8, alignItems:'center'}}><Camera size={18} /> Update Face Profile</span> : <span style={{display:'flex', gap:8, alignItems:'center'}}><Camera size={18} /> Register Face Profile</span>}
-                </button>
+                   {/* Info Form */}
+                   <div style={{ flex: 1 }}>
+                      <h2 style={{ marginBottom: 24 }}>Profile Settings</h2>
+                      <form onSubmit={handleUpdateProfile} className="flex-col gap-md">
+                         <div className="grid grid-2">
+                            <div className="input-group">
+                               <label>Full Name</label>
+                               <input className="input" value={profileForm.full_name} onChange={e => setProfileForm({...profileForm, full_name: e.target.value})} required />
+                            </div>
+                            <div className="input-group">
+                               <label>Email Address</label>
+                               <input type="email" className="input" value={profileForm.email} onChange={e => setProfileForm({...profileForm, email: e.target.value})} required />
+                            </div>
+                         </div>
+                         
+                         <div className="grid grid-2">
+                            <div className="input-group">
+                               <label>Roll Number</label>
+                               <input className="input" defaultValue={profile.roll_number} disabled />
+                            </div>
+                            <div className="input-group">
+                               <label>Department</label>
+                               <input className="input" defaultValue={profile.department} disabled />
+                            </div>
+                         </div>
+
+                         <div style={{ padding: '24px 0', borderTop: '1px solid var(--border-light)', marginTop: 20 }}>
+                            <h3 style={{ marginBottom: 16 }}>Change Password</h3>
+                            <div className="grid grid-2">
+                               <div className="input-group">
+                                  <label>New Password</label>
+                                  <input type="password" placeholder="Leave blank to keep current" className="input" value={profileForm.password} onChange={e => setProfileForm({...profileForm, password: e.target.value})} />
+                               </div>
+                               <div className="input-group">
+                                  <label>Confirm Password</label>
+                                  <input type="password" placeholder="Confirm new password" className="input" value={profileForm.confirmPassword} onChange={e => setProfileForm({...profileForm, confirmPassword: e.target.value})} />
+                               </div>
+                            </div>
+                         </div>
+
+                         <div style={{ marginTop: 24, display: 'flex', gap: 12 }}>
+                            <button type="submit" className="btn btn-primary" style={{ padding: '12px 32px' }} disabled={savingProfile}>
+                               {savingProfile ? 'Saving...' : 'Save Changes'}
+                            </button>
+                         </div>
+                      </form>
+
+                      <div style={{ marginTop: 40, padding: 24, border: '1px solid var(--border)', borderRadius: 12, background: 'var(--bg-input)' }}>
+                        <h4 style={{ marginBottom: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
+                           Face Recognition Data
+                           {profile.has_face && <span style={{ color: 'var(--success)', display: 'flex' }}><CheckCircle2 size={20} /></span>}
+                        </h4>
+                        <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: 16 }}>
+                           {profile.has_face 
+                              ? 'Your face profile is currently active.'
+                              : 'You have not registered your face data yet.'}
+                        </p>
+                        <button className={`btn ${profile.has_face ? 'btn-ghost' : 'btn-primary'}`} onClick={() => setShowFaceModal(true)}>
+                           <Camera size={18} style={{marginRight: 8}} /> {profile.has_face ? 'Update Face Profile' : 'Register Face Profile'}
+                        </button>
+                      </div>
+                   </div>
+                </div>
              </div>
           </div>
         )}

@@ -23,6 +23,8 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     setLogoutCallback(logout);
+    const token = localStorage.getItem('navtac_token');
+    if (token) refreshUser();
   }, [logout]);
 
   const login = async (email, password) => {

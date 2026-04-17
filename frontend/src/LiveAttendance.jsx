@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 import Webcam from 'react-webcam';
-import { ScanFace, Check, Info, AlertTriangle } from 'lucide-react';
+import { ScanFace, Check, Info, AlertTriangle, BookOpen } from 'lucide-react';
 import { API_BASE } from './api';
 
 const LiveAttendance = ({ sessionId, onClose }) => {
@@ -254,17 +254,59 @@ const LiveAttendance = ({ sessionId, onClose }) => {
             )}
 
             {courseOptions && (
-              <div className="scanner-overlay" style={{ background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)' }}>
-                <h3 style={{ color: 'white', marginBottom: 16 }}>Select Course</h3>
-                <p style={{ color: '#ccc', marginBottom: 24 }}>Welcome {courseOptions.student_name}. Which course's attendance do you want to mark?</p>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 12, width: '100%', maxWidth: 300 }}>
+              <div className="scanner-overlay" style={{ background: 'rgba(15, 23, 42, 0.9)', backdropFilter: 'blur(12px)', padding: 40 }}>
+                <div style={{ textAlign: 'center', marginBottom: 32 }}>
+                   <div style={{ width: 64, height: 64, background: 'rgba(79, 172, 254, 0.15)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', color: '#4facfe' }}>
+                      <Info size={32} />
+                   </div>
+                   <h2 style={{ color: 'white', fontSize: '1.8rem', marginBottom: 8 }}>Choose Your Course</h2>
+                   <p style={{ color: 'rgba(255,255,255,0.6)', maxWidth: 400, margin: '0 auto' }}>
+                      Welcome back, <span style={{ color: 'white', fontWeight: 700 }}>{courseOptions.student_name}</span>. Select which class you are attending to mark your attendance.
+                   </p>
+                </div>
+                
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 12, width: '100%', maxWidth: 450, maxHeight: '50vh', overflowY: 'auto', padding: '10px 5px' }}>
                    {courseOptions.courses.map(c => (
-                     <button key={c.id} className="btn btn-primary btn-lg" onClick={() => handleSelectCourse(c.id)}>
-                        {c.course_code} - {c.course_name}
+                     <button 
+                       key={c.id} 
+                       className="card" 
+                       onClick={() => handleSelectCourse(c.id)}
+                       style={{ 
+                         display: 'flex', 
+                         alignItems: 'center', 
+                         gap: 16, 
+                         padding: '16px 24px', 
+                         background: 'rgba(255,255,255,0.05)', 
+                         border: '1px solid rgba(255,255,255,0.1)',
+                         cursor: 'pointer',
+                         textAlign: 'left',
+                         transition: 'all 0.2s ease',
+                         width: '100%'
+                       }}
+                       onMouseOver={e => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
+                       onMouseOut={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+                     >
+                        <div style={{ width: 44, height: 44, background: 'var(--primary)', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}>
+                           <BookOpen size={20} />
+                        </div>
+                        <div style={{ flex: 1 }}>
+                           <div style={{ color: 'white', fontWeight: 700, fontSize: '1rem' }}>{c.course_code}</div>
+                           <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.85rem' }}>{c.course_name}</div>
+                        </div>
+                        <div style={{ color: 'var(--success)' }}>
+                           <Check size={20} />
+                        </div>
                      </button>
                    ))}
                 </div>
-                <button className="btn btn-ghost" style={{ marginTop: 24, color: 'white' }} onClick={() => setCourseOptions(null)}>Cancel</button>
+                
+                <button 
+                   className="btn btn-ghost" 
+                   style={{ marginTop: 32, color: 'rgba(255,255,255,0.5)', fontSize: '0.9rem' }} 
+                   onClick={() => setCourseOptions(null)}
+                >
+                   Cancel Selection
+                </button>
               </div>
             )}
 

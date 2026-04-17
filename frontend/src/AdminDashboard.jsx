@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import { BarChart2, ClipboardList, GraduationCap, BookOpen, LogOut, Camera, Trash2, Download, CheckCircle2, XCircle } from 'lucide-react';
+import { BarChart2, ClipboardList, GraduationCap, BookOpen, LogOut, Camera, Trash2, Download, CheckCircle2, XCircle, TrendingUp, Users, Activity, User, Upload } from 'lucide-react';
 import { useAuth } from './AuthContext';
 import api from './api';
 import Webcam from 'react-webcam';
 import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend
 } from 'recharts';
 
 const AdminDashboard = ({ onOpenKiosk }) => {
@@ -23,6 +23,10 @@ const AdminDashboard = ({ onOpenKiosk }) => {
   const [courseForm, setCourseForm] = useState({ course_code: '', course_name: '', description: '' });
   const [showSessionForm, setShowSessionForm] = useState(false);
   const [sessionCourseId, setSessionCourseId] = useState('');
+
+  // Profile
+  const [profileForm, setProfileForm] = useState({ full_name: user?.full_name || '', email: user?.email || '', password: '', confirmPassword: '' });
+  const [savingProfile, setSavingProfile] = useState(false);
 
   // Modals
   const [showStudentForm, setShowStudentForm] = useState(false);
@@ -213,6 +217,63 @@ const AdminDashboard = ({ onOpenKiosk }) => {
     document.body.removeChild(link);
   };
 
+  const handleUpdateProfile = async (e) => {
+    e.preventDefault();
+    if (profileForm.password && profileForm.password !== profileForm.confirmPassword) {
+      return showToast('Passwords do not match', 'error');
+    }
+    setSavingProfile(true);
+    try {
+      await api.put('/api/auth/profile', {
+        full_name: profileForm.full_name,
+        email: profileForm.email,
+        password: profileForm.password || undefined
+      });
+      showToast('Profile updated!');
+      // Update local storage/context if needed, or just re-fetch me
+      window.location.reload(); 
+    } catch (err) {
+      showToast(err.response?.data?.detail || 'Update failed', 'error');
+    } finally {
+      setSavingProfile(false);
+    }
+  };
+
+  const handleProfilePictureUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    setSavingProfile(true);
+    try {
+      const res = await api.post('/api/auth/profile/picture', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      showToast('Profile picture updated!');
+      window.location.reload();
+    } catch (err) {
+      showToast(err.response?.data?.detail || 'Upload failed', 'error');
+    } finally {
+      setSavingProfile(false);
+    }
+  };
+
+  const handleDeleteProfilePicture = async () => {
+    if (!window.confirm('Are you sure you want to remove your profile picture?')) return;
+    setSavingProfile(true);
+    try {
+      await api.delete('/api/auth/profile/picture');
+      showToast('Profile picture removed!');
+      window.location.reload();
+    } catch (err) {
+      showToast(err.response?.data?.detail || 'Delete failed', 'error');
+    } finally {
+      setSavingProfile(false);
+    }
+  };
+
   const initials = user?.full_name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || 'AD';
 
   // Real-time chart data from fetched attendance
@@ -267,6 +328,19 @@ const AdminDashboard = ({ onOpenKiosk }) => {
     }
   }, [attendance, selectedCourseChart]);
 
+  const pieChartData = useMemo(() => {
+    if (!attendance || attendance.length === 0) return [];
+    const counts = { OnTime: 0, Late: 0 };
+    attendance.forEach(rec => {
+      if (rec.status === 'present' || rec.status === 'On Time') counts.OnTime++;
+      else counts.Late++;
+    });
+    return [
+      { name: 'On-Time', value: counts.OnTime, color: 'var(--success)' },
+      { name: 'Late', value: counts.Late, color: 'var(--secondary)' }
+    ].filter(d => d.value > 0);
+  }, [attendance]);
+
   return (
     <div className="app-layout">
       {/* Sidebar */}
@@ -290,6 +364,9 @@ const AdminDashboard = ({ onOpenKiosk }) => {
           <button className={`nav-item ${activeTab === 'courses' ? 'active' : ''}`} onClick={() => setActiveTab('courses')}>
             <span className="nav-icon"><BookOpen size={18} /></span> Courses
           </button>
+          <button className={`nav-item ${activeTab === 'profile' ? 'active' : ''}`} onClick={() => setActiveTab('profile')}>
+            <span className="nav-icon"><User size={18} /></span> Profile
+          </button>
         </nav>
         <div className="sidebar-footer">
           <div className="user-badge" style={{ flexDirection: 'column', alignItems: 'flex-start', padding: 16, border: 'none', background: 'transparent' }}>
@@ -308,8 +385,15 @@ const AdminDashboard = ({ onOpenKiosk }) => {
            <div style={{ display: 'flex', gap: 24, fontSize: '0.9rem', color: 'var(--text-muted)' }}>
               <div><strong style={{color: 'var(--text-primary)'}}>Attendance</strong><br/>{new Date().toLocaleDateString()}</div>
            </div>
-           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-              <div className="user-avatar" style={{width: 32, height: 32}}>{initials}</div>
+           <div 
+             style={{ display: 'flex', alignItems: 'center', gap: 16, cursor: 'pointer' }}
+             onClick={() => setActiveTab('profile')}
+           >
+              {user?.profile_picture ? (
+                <img src={api.defaults.baseURL + user.profile_picture} alt="Profile" style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--primary-light)' }} />
+              ) : (
+                <div className="user-avatar" style={{width: 32, height: 32}}>{initials}</div>
+              )}
               <span style={{ fontWeight: 600 }}>{user?.full_name}</span>
            </div>
         </div>
@@ -322,29 +406,78 @@ const AdminDashboard = ({ onOpenKiosk }) => {
 
         {/* OVERVIEW */}
         {activeTab === 'overview' && (
-          <div className="animate-in grid grid-3">
+          <div className="animate-in flex-col gap-lg">
             
-            {/* Left Column: Chart & Backlog */}
-            <div style={{ gridColumn: 'span 2', display: 'flex', flexDirection: 'column', gap: 24 }}>
-               
-               {/* Standout Face Scanner Start Box */}
-               <div className="card" style={{ padding: 24, background: 'linear-gradient(135deg, var(--primary), var(--primary-dark))', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <div>
-                    <h2 style={{ color: 'white', marginBottom: 8 }}>Take Attendance</h2>
-                    <p style={{ opacity: 0.9, maxWidth: 400 }}>Start the intelligent face scanner to instantly mark attendance for your class.</p>
+            {/* 1. TOP METRICS ROW */}
+            <div className="grid grid-4 mb-lg">
+               <div className="stat-card" style={{ background: 'linear-gradient(135deg, #ffffff, #f8f9ff)', borderLeft: '4px solid var(--primary)' }}>
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <div className="stat-label">Total Students</div>
+                      <div className="stat-value">{stats.total_students || 0}</div>
+                    </div>
+                    <div className="stat-icon" style={{ background: 'rgba(72, 76, 218, 0.1)', color: 'var(--primary)' }}><Users size={20}/></div>
                   </div>
-                  <button className="btn btn-success btn-lg" style={{ borderRadius: 30, padding: '12px 32px' }} onClick={() => setShowSessionForm(true)}>
-                     <span style={{display:'flex', alignItems:'center', gap:8}}><Camera size={18}/> Open Face Scanner</span>
-                  </button>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--success)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4, marginTop: 8 }}>
+                    <TrendingUp size={12}/> <span>System Active</span>
+                  </div>
                </div>
 
-               {/* Chart Card */}
+               <div className="stat-card" style={{ background: 'linear-gradient(135deg, #ffffff, #fefaff)', borderLeft: '4px solid var(--secondary)' }}>
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <div className="stat-label">Active Courses</div>
+                      <div className="stat-value">{stats.total_courses || 0}</div>
+                    </div>
+                    <div className="stat-icon" style={{ background: 'rgba(15, 201, 231, 0.1)', color: 'var(--secondary)' }}><BookOpen size={20}/></div>
+                  </div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: 8 }}>
+                    {stats.active_sessions || 0} Ongoing Sessions
+                  </div>
+               </div>
+
+               <div className="stat-card" style={{ background: 'linear-gradient(135deg, #ffffff, #f7fffb)', borderLeft: '4px solid var(--success)' }}>
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <div className="stat-label">Face Registration</div>
+                      <div className="stat-value">
+                        {stats.total_students > 0 ? Math.round((stats.students_with_face / stats.total_students) * 100) : 0}%
+                      </div>
+                    </div>
+                    <div className="stat-icon" style={{ background: 'var(--success-bg)', color: 'var(--success)' }}><Camera size={20}/></div>
+                  </div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: 8 }}>
+                    {stats.students_with_face || 0} enrolled profiles
+                  </div>
+               </div>
+
+               <div className="stat-card" style={{ background: 'linear-gradient(135deg, #ffffff, #fffaf7)', borderLeft: '4px solid var(--warning)' }}>
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <div className="stat-label">Total Logs</div>
+                      <div className="stat-value">{stats.total_records || 0}</div>
+                    </div>
+                    <div className="stat-icon" style={{ background: 'var(--warning-bg)', color: 'var(--warning)' }}><Activity size={20}/></div>
+                  </div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: 8 }}>
+                    All-time attendance
+                  </div>
+               </div>
+            </div>
+
+            {/* 2. CHARTS ROW */}
+            <div className="grid" style={{ gridTemplateColumns: '2fr 1fr', marginBottom: 32 }}>
+               
+               {/* Attendance Bar Chart */}
                <div className="card" style={{ padding: 24 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 24 }}>
-                     <h3>Attendance Status</h3>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 24, alignItems: 'center' }}>
+                     <div>
+                       <h3 style={{ marginBottom: 4 }}>Attendance Trends</h3>
+                       <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Real-time statistics per course/date</p>
+                     </div>
                      <select 
                         className="input" 
-                        style={{ width: 150, padding: '8px 12px' }}
+                        style={{ width: 160, padding: '8px 12px', fontSize: '0.85rem' }}
                         value={selectedCourseChart}
                         onChange={(e) => setSelectedCourseChart(e.target.value)}
                      >
@@ -354,79 +487,145 @@ const AdminDashboard = ({ onOpenKiosk }) => {
                         ))}
                      </select>
                   </div>
-                  <div style={{ height: 250, width: '100%', minWidth: 0, minHeight: 0 }}>
+                  <div style={{ height: 300, width: '100%' }}>
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={chartData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
-                        <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#94A3B8', fontSize: 12}} />
-                        <YAxis axisLine={false} tickLine={false} tick={{fill: '#94A3B8', fontSize: 12}} />
-                        <Tooltip cursor={{fill: 'transparent'}} contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
-                        <Bar dataKey="OnTime" fill="var(--primary)" radius={[4, 4, 0, 0]} barSize={12} />
-                        <Bar dataKey="Late" fill="var(--secondary)" radius={[4, 4, 0, 0]} barSize={12} />
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                        <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#94A3B8', fontSize: 11}} />
+                        <YAxis axisLine={false} tickLine={false} tick={{fill: '#94A3B8', fontSize: 11}} />
+                        <Tooltip cursor={{fill: '#f8fafc'}} contentStyle={{ borderRadius: 12, border: 'none', boxShadow: 'var(--shadow-lg)' }} />
+                        <Bar dataKey="OnTime" fill="var(--primary)" radius={[4, 4, 0, 0]} barSize={selectedCourseChart === 'all' ? 12 : 30} />
+                        <Bar dataKey="Late" fill="var(--secondary)" radius={[4, 4, 0, 0]} barSize={selectedCourseChart === 'all' ? 12 : 30} />
                       </BarChart>
                     </ResponsiveContainer>
                   </div>
                </div>
 
-               <div className="grid grid-2">
-                 {sessions.filter(s => s.status === 'active').slice(0,2).map(s => (
-                   <div key={s.id} className="card" style={{ padding: 20, borderLeft: '4px solid var(--success)' }}>
-                      <span className="badge badge-success mb-sm">Active Session</span>
-                      <h4>{s.course_code} - {s.course_name}</h4>
-                      <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: 12 }}>Started at {new Date(s.start_time).toLocaleTimeString()}</p>
-                      <div className="flex gap-sm">
-                        <button className="btn btn-primary btn-sm" style={{display:'inline-flex', alignItems:'center', gap:6}} onClick={() => onOpenKiosk(s.id)}><Camera size={14}/> Open Kiosk</button>
-                        <button className="btn btn-ghost btn-sm" onClick={() => handleEndSession(s.id, 'complete')}>End</button>
+               {/* Attendance Status Pie Chart */}
+               <div className="card" style={{ padding: 24, display: 'flex', flexDirection: 'column' }}>
+                  <h3 style={{ marginBottom: 4 }}>Status Distribution</h3>
+                  <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: 20 }}>Overall system check-ins</p>
+                  
+                  <div style={{ flex: 1, minHeight: 200 }}>
+                    {pieChartData.length > 0 ? (
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie
+                            data={pieChartData}
+                            innerRadius={60}
+                            outerRadius={80}
+                            paddingAngle={5}
+                            dataKey="value"
+                            stroke="none"
+                          >
+                            {pieChartData.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={entry.color} />
+                            ))}
+                          </Pie>
+                          <Tooltip contentStyle={{ borderRadius: 12, border: 'none', boxShadow: 'var(--shadow-md)' }} />
+                          <Legend verticalAlign="bottom" iconType="circle" wrapperStyle={{ fontSize: '0.8rem', paddingTop: 20 }} />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    ) : (
+                      <div className="flex-col items-center justify-center" style={{ height: '100%', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
+                        No data available
                       </div>
-                   </div>
-                 ))}
+                    )}
+                  </div>
                </div>
-
             </div>
 
-            {/* Right Column: Active Streams & Recent Logs */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+            {/* 3. BOTTOM ROW: BANNER + LISTS */}
+            <div className="grid" style={{ gridTemplateColumns: '2fr 1fr' }}>
                
-               <div className="card" style={{ padding: 24 }}>
-                  <h3 style={{ marginBottom: 20 }}>System Stats</h3>
-                  <div className="flex-col gap-md">
-                     <div className="flex justify-between items-center" style={{ paddingBottom: 16, borderBottom: '1px solid var(--border-light)' }}>
-                        <div>
-                          <span style={{ fontSize: '1.8rem', fontWeight: 800 }}>{stats.total_students || 0}</span>
-                          <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Total Students</div>
+               <div className="flex-col gap-lg">
+                  {/* Premium Scanner Banner */}
+                  <div className="card" style={{ padding: 32, background: 'linear-gradient(135deg, var(--primary), var(--primary-dark))', color: 'white', position: 'relative', overflow: 'hidden' }}>
+                    <div style={{ position: 'relative', zIndex: 2 }}>
+                       <h2 style={{ color: 'white', marginBottom: 12, fontSize: '1.8rem' }}>Intelligent Face Kiosk</h2>
+                       <p style={{ opacity: 0.9, maxWidth: 450, marginBottom: 24, lineHeight: 1.6 }}>Ready to track attendance? Launch the smart scanner to automatically detect and mark register students.</p>
+                        <div className="flex gap-md">
+                           <button className="btn btn-success" style={{ borderRadius: 30, padding: '12px 28px', boxShadow: '0 10px 20px rgba(0,0,0,0.15)' }} onClick={() => setShowSessionForm(true)}>
+                              <span style={{display:'flex', alignItems:'center', gap:10}}><Camera size={18}/> Locked Session</span>
+                           </button>
+                           <button className="btn btn-primary" style={{ borderRadius: 30, padding: '12px 28px', background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.3)', color: 'white', boxShadow: '0 10px 20px rgba(0,0,0,0.1)' }} onClick={() => onOpenKiosk('live')}>
+                              <span style={{display:'flex', alignItems:'center', gap:10}}><Activity size={18}/> Universal Kiosk</span>
+                           </button>
                         </div>
-                     </div>
-                     <div className="flex justify-between items-center" style={{ paddingBottom: 16, borderBottom: '1px solid var(--border-light)' }}>
-                        <div>
-                          <span style={{ fontSize: '1.8rem', fontWeight: 800 }}>{stats.total_courses || 0}</span>
-                          <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Active Courses</div>
-                        </div>
-                     </div>
-                     <div className="flex justify-between items-center">
-                        <div>
-                          <span style={{ fontSize: '1.8rem', fontWeight: 800 }}>{stats.students_with_face || 0}</span>
-                          <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Registered Faces</div>
-                        </div>
-                     </div>
+                    </div>
+                    {/* Decorative Element */}
+                    <div style={{ position: 'absolute', right: '-20px', bottom: '-20px', opacity: 0.1 }}>
+                       <Camera size={200} color="white" />
+                    </div>
+                  </div>
+
+                  {/* Quick Management Hub */}
+                  <div style={{ marginTop: 32 }}>
+                    <h3 style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
+                       <Activity size={18} color="var(--primary)" /> Quick Management
+                    </h3>
+                    <div className="grid grid-2">
+                       <div className="card hover-up" style={{ padding: 20, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 16 }} onClick={() => { setActiveTab('students'); setShowStudentForm(true); }}>
+                          <div style={{ width: 48, height: 48, borderRadius: 12, background: 'rgba(34, 197, 94, 0.1)', color: 'var(--success)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                             <Users size={24} />
+                          </div>
+                          <div>
+                             <h4 style={{ fontSize: '1rem', marginBottom: 2 }}>Register Student</h4>
+                             <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Add new profile</p>
+                          </div>
+                       </div>
+
+                       <div className="card hover-up" style={{ padding: 20, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 16 }} onClick={() => { setActiveTab('courses'); setShowCourseForm(true); }}>
+                          <div style={{ width: 48, height: 48, borderRadius: 12, background: 'rgba(59, 130, 246, 0.1)', color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                             <BookOpen size={24} />
+                          </div>
+                          <div>
+                             <h4 style={{ fontSize: '1rem', marginBottom: 2 }}>Create Course</h4>
+                             <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Setup new subject</p>
+                          </div>
+                       </div>
+
+                       <div className="card hover-up" style={{ padding: 20, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 16 }} onClick={handleDownloadCSV}>
+                          <div style={{ width: 48, height: 48, borderRadius: 12, background: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                             <Download size={24} />
+                          </div>
+                          <div>
+                             <h4 style={{ fontSize: '1rem', marginBottom: 2 }}>Export Reports</h4>
+                             <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Get CSV data</p>
+                          </div>
+                       </div>
+
+                       <div className="card hover-up" style={{ padding: 20, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 16 }} onClick={() => setActiveTab('profile')}>
+                          <div style={{ width: 48, height: 48, borderRadius: 12, background: 'rgba(139, 92, 246, 0.1)', color: '#8b5cf6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                             <User size={24} />
+                          </div>
+                          <div>
+                             <h4 style={{ fontSize: '1rem', marginBottom: 2 }}>Edit Profile</h4>
+                             <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Account settings</p>
+                          </div>
+                       </div>
+                    </div>
                   </div>
                </div>
 
-               <div className="card" style={{ padding: 24, flex: 1 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 20 }}>
-                     <h3>Recent Activity</h3>
+               {/* Recent Activity Sidebar */}
+               <div className="card" style={{ padding: 24, height: 'fit-content' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 24 }}>
+                     <h3>Recent Logs</h3>
+                     <button className="btn btn-ghost btn-sm" onClick={() => setActiveTab('attendance')}>View All</button>
                   </div>
                   <div className="flex-col gap-sm">
-                     {attendance.slice(0, 5).map(log => (
-                        <div key={log.id} style={{ display: 'flex', gap: 12, alignItems: 'center', padding: '12px 0', borderBottom: '1px solid var(--border-light)' }}>
-                           <div className="user-avatar" style={{width: 36, height: 36, fontSize: '0.8rem'}}>{log.student_name[0]}</div>
+                     {attendance.slice(0, 8).map(log => (
+                        <div key={log.id} style={{ display: 'flex', gap: 12, alignItems: 'center', padding: '14px 0', borderBottom: '1px solid var(--border-light)' }}>
+                           <div className="user-avatar" style={{width: 38, height: 38, fontSize: '0.85rem', background: 'var(--bg-primary)', color: 'var(--text-primary)', border: '1px solid var(--border)'}}>{log.student_name[0]}</div>
                            <div style={{ flex: 1, minWidth: 0 }}>
                               <div style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{log.student_name}</div>
-                              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{log.course_code} • {new Date(log.timestamp).toLocaleTimeString()}</div>
+                              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{log.course_code} • {new Date(log.timestamp).toLocaleDateString()} {new Date(log.timestamp).toLocaleTimeString()}</div>
                            </div>
-                           <span style={{ fontSize: '0.8rem', color: 'var(--success)', fontWeight: 600 }}>• Ontime</span>
+                           <span style={{ fontSize: '0.8rem', color: log.status === 'present' || log.status === 'On Time' ? 'var(--success)' : 'var(--secondary)', fontWeight: 600 }}>• {log.status}</span>
                         </div>
                      ))}
-                     {attendance.length === 0 && <div style={{ textAlign: 'center', color: 'var(--text-muted)', paddingTop: 20 }}>No records yet</div>}
+                     {attendance.length === 0 && <div style={{ textAlign: 'center', color: 'var(--text-muted)', paddingTop: 40 }}>No activity recorded yet.</div>}
                   </div>
                </div>
 
@@ -476,7 +675,7 @@ const AdminDashboard = ({ onOpenKiosk }) => {
                               </td>
                               <td style={{ color: 'var(--text-muted)', fontWeight: 500 }}>{r.roll_number}</td>
                               <td>{r.course_code}</td>
-                              <td>{new Date(r.timestamp).toLocaleTimeString()}</td>
+                              <td>{new Date(r.timestamp).toLocaleDateString()} {new Date(r.timestamp).toLocaleTimeString()}</td>
                               <td><span style={{ color: 'var(--success)', fontWeight: 600 }}>• {r.status}</span></td>
                               <td>{r.confidence ? `${(r.confidence * 100).toFixed(0)}%` : '—'}</td>
                            </tr>
@@ -570,8 +769,14 @@ const AdminDashboard = ({ onOpenKiosk }) => {
                      <label>Course Name</label>
                      <input className="input" placeholder="e.g. Intro to CS" required value={courseForm.course_name} onChange={e => setCourseForm({ ...courseForm, course_name: e.target.value })} />
                    </div>
-                   <button type="submit" className="btn btn-success">Save Course</button>
-                   <button type="button" className="btn btn-ghost" onClick={() => setShowCourseForm(false)}>Cancel</button>
+                                       <div style={{ display: 'flex', flexDirection: 'column' }}>
+                      <label style={{ visibility: 'hidden', height: 20, marginBottom: 4 }}>S</label>
+                      <button type="submit" className="btn btn-success" style={{ height: 46, padding: '0 24px' }}>Save Course</button>
+                   </div>
+                                       <div style={{ display: 'flex', flexDirection: 'column' }}>
+                      <label style={{ visibility: 'hidden', height: 20, marginBottom: 4 }}>S</label>
+                      <button type="button" className="btn btn-ghost" style={{ height: 46, padding: '0 20px' }} onClick={() => setShowCourseForm(false)}>Cancel</button>
+                   </div>
                 </form>
               </div>
             )}
@@ -595,6 +800,84 @@ const AdminDashboard = ({ onOpenKiosk }) => {
           </div>
         )}
 
+        {/* PROFILE SETTINGS */}
+        {activeTab === 'profile' && (
+          <div className="animate-in flex-col gap-lg" style={{ maxWidth: 800 }}>
+             <div className="card" style={{ padding: 40 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'minmax(150px, 1fr) 2fr', gap: 40, alignItems: 'flex-start' }}>
+                   {/* Avatar Section */}
+                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
+                      <div style={{ position: 'relative' }}>
+                        {user?.profile_picture ? (
+                          <img src={api.defaults.baseURL + user.profile_picture} alt="Profile" style={{ width: 140, height: 140, borderRadius: '50%', objectFit: 'cover', border: '4px solid var(--border-light)' }} />
+                        ) : (
+                          <div style={{ width: 140, height: 140, borderRadius: '50%', background: 'var(--primary)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '3rem', fontWeight: 800 }}>
+                            {initials}
+                          </div>
+                        )}
+                        <label htmlFor="profile-upload" style={{ position: 'absolute', bottom: 5, right: 5, background: 'var(--success)', color: 'white', width: 36, height: 36, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', border: '3px solid white', boxShadow: 'var(--shadow-md)' }}>
+                           <Camera size={16} />
+                           <input id="profile-upload" type="file" hidden accept="image/*" onChange={handleProfilePictureUpload} disabled={savingProfile} />
+                        </label>
+                        {user?.profile_picture && (
+                          <button 
+                            type="button"
+                            onClick={handleDeleteProfilePicture}
+                            style={{ position: 'absolute', top: 5, right: 5, background: 'var(--danger)', color: 'white', width: 30, height: 30, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', border: '2px solid white', boxShadow: 'var(--shadow-md)', padding: 0 }}
+                            title="Remove Picture"
+                          >
+                             <Trash2 size={14} />
+                          </button>
+                        )}
+                      </div>
+                      <div style={{ textAlign: 'center' }}>
+                         <h3 style={{ marginBottom: 4 }}>{user?.full_name}</h3>
+                         <span className="badge badge-primary">{user?.role}</span>
+                      </div>
+                   </div>
+
+                   {/* Info Form */}
+                   <div style={{ flex: 1 }}>
+                      <h2 style={{ marginBottom: 24 }}>Account Settings</h2>
+                      <form onSubmit={handleUpdateProfile} className="flex-col gap-md">
+                         <div className="grid grid-2">
+                            <div className="input-group">
+                               <label>Full Name</label>
+                               <input className="input" value={profileForm.full_name} onChange={e => setProfileForm({...profileForm, full_name: e.target.value})} required />
+                            </div>
+                            <div className="input-group">
+                               <label>Email Address</label>
+                               <input type="email" className="input" value={profileForm.email} onChange={e => setProfileForm({...profileForm, email: e.target.value})} required />
+                            </div>
+                         </div>
+
+                         <div style={{ padding: '24px 0', borderTop: '1px solid var(--border-light)', marginTop: 20 }}>
+                            <h3 style={{ marginBottom: 16 }}>Change Password</h3>
+                            <div className="grid grid-2">
+                               <div className="input-group">
+                                  <label>New Password</label>
+                                  <input type="password" placeholder="Leave blank to keep current" className="input" value={profileForm.password} onChange={e => setProfileForm({...profileForm, password: e.target.value})} />
+                               </div>
+                               <div className="input-group">
+                                  <label>Confirm Password</label>
+                                  <input type="password" placeholder="Confirm new password" className="input" value={profileForm.confirmPassword} onChange={e => setProfileForm({...profileForm, confirmPassword: e.target.value})} />
+                               </div>
+                            </div>
+                         </div>
+
+                         <div style={{ marginTop: 24, display: 'flex', gap: 12 }}>
+                            <button type="submit" className="btn btn-primary" style={{ padding: '12px 32px' }} disabled={savingProfile}>
+                               {savingProfile ? 'Saving...' : 'Save Changes'}
+                            </button>
+                            <button type="button" className="btn btn-ghost" onClick={() => setActiveTab('overview')}>Cancel</button>
+                         </div>
+                      </form>
+                   </div>
+                </div>
+             </div>
+          </div>
+        )}
+
       </div>
 
       {/* Start Session / Take Attendance Modal */}
@@ -610,9 +893,9 @@ const AdminDashboard = ({ onOpenKiosk }) => {
                      {courses.map(c => <option key={c.id} value={c.id}>{c.course_code} — {c.course_name}</option>)}
                   </select>
                </div>
-               <button className="btn btn-primary btn-block btn-lg" onClick={() => handleStartSession(sessionCourseId)} disabled={!sessionCourseId}>
-                  📸 Initialize Scanner
-               </button>
+                <button className="btn btn-primary btn-block btn-lg" onClick={() => handleStartSession(sessionCourseId)} disabled={!sessionCourseId}>
+                   📸 Initialize Scanner
+                </button>
             </div>
          </div>
       )}
