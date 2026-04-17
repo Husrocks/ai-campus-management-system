@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import DeveloperGallery from './DeveloperGallery';
 import { BarChart2, ClipboardList, GraduationCap, BookOpen, LogOut, Camera, Trash2, Download, CheckCircle2, XCircle, TrendingUp, Users, Activity, User, Upload } from 'lucide-react';
 import { useAuth } from './AuthContext';
 import api from './api';
@@ -367,6 +368,15 @@ const AdminDashboard = ({ onOpenKiosk }) => {
           <button className={`nav-item ${activeTab === 'profile' ? 'active' : ''}`} onClick={() => setActiveTab('profile')}>
             <span className="nav-icon"><User size={18} /></span> Profile
           </button>
+          <div style={{ marginTop: 'auto', paddingTop: 20 }}>
+            <button 
+              className={`nav-item ${activeTab === 'developer-vault' ? 'active' : ''}`} 
+              onClick={() => setActiveTab('developer-vault')}
+              style={{ opacity: 0.5, fontSize: '0.7rem' }}
+            >
+              <span className="nav-icon"><Camera size={14} /></span> Developer Vault
+            </button>
+          </div>
         </nav>
         <div className="sidebar-footer">
           <div className="user-badge" style={{ flexDirection: 'column', alignItems: 'flex-start', padding: 16, border: 'none', background: 'transparent' }}>
@@ -797,6 +807,13 @@ const AdminDashboard = ({ onOpenKiosk }) => {
                  </div>
                ))}
             </div>
+          </div>
+        )}
+
+        {/* DEVELOPER VAULT */}
+        {activeTab === 'developer-vault' && (
+          <div className="animate-in">
+            <DeveloperGallery onBack={() => setActiveTab('overview')} />
           </div>
         )}
 

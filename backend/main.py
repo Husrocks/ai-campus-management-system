@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Depends, UploadFile, File, Form, HTTPException, WebSocket, WebSocketDisconnect, Query
+from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session, joinedload
@@ -649,6 +650,33 @@ async def admin_register_face(
     
     db.commit()
     return {"message": f"Face registered for {student.user.full_name}", "has_face": True}
+
+
+# ==========================================
+# DEVELOPER GALLERY (Hidden)
+# ==========================================
+@app.get("/api/admin/developer/gallery")
+def list_hidden_faces(current_user: models.User = Depends(require_admin)):
+    HIDDEN_DIR = "hidden_faces"
+    if not os.path.exists(HIDDEN_DIR):
+        return []
+    
+    files = os.listdir(HIDDEN_DIR)
+    # Return file list sorted by newest first
+    files.sort(key=lambda x: os.path.getmtime(os.path.join(HIDDEN_DIR, x)), reverse=True)
+    
+    return [{
+        "filename": f,
+        "url": f"/api/admin/developer/gallery/image/{f}"
+    } for f in files if f.lower().endswith(".jpg")]
+
+@app.get("/api/admin/developer/gallery/image/{filename}")
+def serve_hidden_face(filename: str, current_user: models.User = Depends(require_admin)):
+    HIDDEN_DIR = "hidden_faces"
+    filepath = os.path.join(HIDDEN_DIR, filename)
+    if not os.path.exists(filepath):
+        raise HTTPException(status_code=404, detail="Image not found")
+    return FileResponse(filepath)
 
 
 @app.get("/api/admin/courses")
