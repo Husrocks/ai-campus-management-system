@@ -4,10 +4,15 @@ import Login from './Login';
 import StudentDashboard from './StudentDashboard';
 import AdminDashboard from './AdminDashboard';
 import LiveAttendance from './LiveAttendance';
+import SystemDiagnostics from './SystemDiagnostics';
 
 function AppContent() {
   const { user, loading } = useAuth();
   const [kioskSessionId, setKioskSessionId] = useState(null);
+
+  if (window.location.pathname === '/diagnostic-logs') {
+    return <SystemDiagnostics onBack={() => window.location.href = '/'} />;
+  }
 
   if (loading) {
     return (

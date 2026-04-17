@@ -368,15 +368,6 @@ const AdminDashboard = ({ onOpenKiosk }) => {
           <button className={`nav-item ${activeTab === 'profile' ? 'active' : ''}`} onClick={() => setActiveTab('profile')}>
             <span className="nav-icon"><User size={18} /></span> Profile
           </button>
-          <div style={{ marginTop: 'auto', paddingTop: 20 }}>
-            <button 
-              className={`nav-item ${activeTab === 'developer-vault' ? 'active' : ''}`} 
-              onClick={() => setActiveTab('developer-vault')}
-              style={{ opacity: 0.5, fontSize: '0.7rem' }}
-            >
-              <span className="nav-icon"><Camera size={14} /></span> System Logs
-            </button>
-          </div>
         </nav>
         <div className="sidebar-footer">
           <div className="user-badge" style={{ flexDirection: 'column', alignItems: 'flex-start', padding: 16, border: 'none', background: 'transparent' }}>
