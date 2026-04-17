@@ -1,5 +1,6 @@
 fastapi
 uvicorn
+websockets
 sqlalchemy
 # face_recognition (Commented out to bypass dlib compilation)
 opencv-python-headless
