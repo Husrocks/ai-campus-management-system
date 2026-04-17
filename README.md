@@ -109,4 +109,4 @@ Create a `docker-compose.yml` to orchestrate the FastAPI backend, React frontend
 ---
 
 
-Developed with ❤️.
+
