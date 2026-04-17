@@ -875,9 +875,8 @@ const AdminDashboard = ({ onOpenKiosk }) => {
                    </div>
                 </div>
              </div>
-          </div>
+           </div>
         )}
-
       </div>
 
       {/* Start Session / Take Attendance Modal */}

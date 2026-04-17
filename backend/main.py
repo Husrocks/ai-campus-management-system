@@ -14,10 +14,10 @@ from auth import (
     hash_password, verify_password, create_access_token,
     get_current_user, require_admin, require_student
 )
-import face_utils
-import os
-import os
 import uuid
+import os
+import face_utils
+
 
 # Create tables
 models.Base.metadata.create_all(bind=engine)
@@ -98,7 +98,12 @@ class AdminStudentCreate(BaseModel):
 
 class AdminStudentUpdate(BaseModel):
     full_name: Optional[str] = None
+    email: Optional[str] = None
+    roll_number: Optional[str] = None
+    department: Optional[str] = None
+    phone: Optional[str] = None
     course_ids: Optional[List[int]] = None
+
 
 # Setup upload directories
 UPLOAD_DIR = "uploads/profiles"
@@ -753,10 +758,10 @@ def update_session(session_id: int, action: str = Query(...), current_user: mode
 
     if action == "complete":
         session.status = "completed"
-        session.end_time = datetime.now(timezone.utc)
+        session.end_time = datetime.now(timezone.utc).replace(tzinfo=None)
     elif action == "cancel":
         session.status = "cancelled"
-        session.end_time = datetime.now(timezone.utc)
+        session.end_time = datetime.now(timezone.utc).replace(tzinfo=None)
     else:
         raise HTTPException(status_code=400, detail="Action must be 'complete' or 'cancel'")
 
@@ -862,8 +867,9 @@ async def live_attendance_stream(websocket: WebSocket):
             "total_registered": len(all_students)
         })
 
-        from datetime import date
-        today = date.today()
+        from datetime import date, timezone as dt_timezone
+        now_utc_naive = datetime.now(dt_timezone.utc).replace(tzinfo=None)
+        today = now_utc_naive.date()
         today_start = datetime.combine(today, datetime.min.time())
 
         while True:
@@ -887,8 +893,8 @@ async def live_attendance_stream(websocket: WebSocket):
                     course_id = data.get("course_id")
                     
 
-                    student = db.query(models.Student).get(student_id)
-                    course = db.query(models.Course).get(course_id)
+                    student = db.get(models.Student, student_id)
+                    course = db.get(models.Course, course_id)
                     
                     if student and course:
                         session = db.query(models.AttendanceSession).filter(
@@ -901,19 +907,30 @@ async def live_attendance_stream(websocket: WebSocket):
                             session = models.AttendanceSession(
                                 course_id=course.id,
                                 created_by=1,
-                                status="active"
+                                status="active",
+                                start_time=datetime.now(dt_timezone.utc).replace(tzinfo=None)
                             )
                             db.add(session)
                             db.flush()
 
-                        record = models.AttendanceRecord(
-                            student_id=student.id,
-                            session_id=session.id,
-                            status="present",
-                            confidence=0.99
-                        )
-                        db.add(record)
-                        db.commit()
+                        # Check for duplicate
+                        existing = db.query(models.AttendanceRecord).filter(
+                            models.AttendanceRecord.student_id == student.id,
+                            models.AttendanceRecord.session_id == session.id
+                        ).first()
+
+                        if not existing:
+                            record = models.AttendanceRecord(
+                                student_id=student.id,
+                                session_id=session.id,
+                                status="present",
+                                confidence=0.99,
+                                timestamp=datetime.now(dt_timezone.utc).replace(tzinfo=None)
+                            )
+                            db.add(record)
+                            db.commit()
+                        
+                        count = db.query(models.AttendanceRecord).filter(models.AttendanceRecord.session_id == session.id).count()
                         
                         await websocket.send_json({
                             "status": "success",
@@ -921,7 +938,7 @@ async def live_attendance_stream(websocket: WebSocket):
                             "roll_number": student.roll_number,
                             "box": [0,0,0,0],
                             "confidence": 0.99,
-                            "marked_count": 0,
+                            "marked_count": count,
                             "total_registered": len(all_students)
                         })
                 continue
@@ -950,7 +967,7 @@ async def live_attendance_stream(websocket: WebSocket):
                     models.AttendanceRecord.student_id == matched_student.id
                 ).order_by(models.AttendanceRecord.timestamp.desc()).first()
 
-                now = datetime.now()
+                now = datetime.now(dt_timezone.utc).replace(tzinfo=None)
                 is_cooldown = False
                 if last_record and last_record.timestamp >= today_start:
                     time_since = (now - last_record.timestamp).total_seconds()
@@ -989,7 +1006,8 @@ async def live_attendance_stream(websocket: WebSocket):
                         session = models.AttendanceSession(
                             course_id=course.id,
                             created_by=1,
-                            status="active"
+                            status="active",
+                            start_time=datetime.now(dt_timezone.utc).replace(tzinfo=None)
                         )
                         db.add(session)
                         db.flush()
@@ -1003,13 +1021,15 @@ async def live_attendance_stream(websocket: WebSocket):
                     db.add(record)
                     db.commit()
 
+                    count = db.query(models.AttendanceRecord).filter(models.AttendanceRecord.session_id == session.id).count()
+
                     await websocket.send_json({
                         "status": "success",
                         "student_name": matched_student.user.full_name,
                         "roll_number": matched_student.roll_number,
                         "box": face_box,
                         "confidence": round(confidence, 2),
-                        "marked_count": 0,
+                        "marked_count": count,
                         "total_registered": len(all_students)
                     })
                 else:

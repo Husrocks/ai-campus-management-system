@@ -9,7 +9,6 @@ const LiveAttendance = ({ sessionId, onClose }) => {
 
   const [isConnected, setIsConnected] = useState(false);
   const [sessionInfo, setSessionInfo] = useState(null);
-  const [logs, setLogs] = useState([]);
   const [faceData, setFaceData] = useState({ box: null, color: '#ff0000', label: '' });
   const [markedCount, setMarkedCount] = useState(0);
   const [totalEnrolled, setTotalEnrolled] = useState(0);
@@ -68,17 +67,10 @@ const LiveAttendance = ({ sessionId, onClose }) => {
         setFaceData({
           box: data.box,
           color: '#00D2A0',
-          label: `${data.student_name} (${data.roll_number})`
+          label: `${data.student_name} (Marked)`
         });
         setMarkedCount(data.marked_count || 0);
         setTotalEnrolled(data.total_enrolled || 0);
-        setLogs(prev => [{
-          name: data.student_name,
-          roll: data.roll_number,
-          confidence: data.confidence,
-          time: new Date().toLocaleTimeString(),
-          type: 'success'
-        }, ...prev]);
       } else if (data.status === 'duplicate') {
         setCourseOptions(null);
         setFaceData({
@@ -90,7 +82,7 @@ const LiveAttendance = ({ sessionId, onClose }) => {
         setFaceData({
           box: data.box,
           color: '#FF6B6B',
-          label: 'Unknown Face'
+          label: data.message || 'Unknown Face'
         });
       }
     };
@@ -145,7 +137,7 @@ const LiveAttendance = ({ sessionId, onClose }) => {
         student_id: courseOptions.student_id,
         course_id: courseId
       }));
-      setCourseOptions(null); // Wait for success response
+      // Wait for server to send 'success' before clearing courseOptions
     }
   };
 

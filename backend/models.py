@@ -76,7 +76,7 @@ class AttendanceSession(Base):
     id = Column(Integer, primary_key=True, index=True)
     course_id = Column(Integer, ForeignKey("courses.id", ondelete="CASCADE"), nullable=False)
     created_by = Column(Integer, ForeignKey("users.id"), nullable=False)
-    start_time = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    start_time = Column(DateTime, default=lambda: datetime.now(timezone.utc).replace(tzinfo=None))
     end_time = Column(DateTime, nullable=True)
     status = Column(String, default="active")  # "active", "completed", "cancelled"
 
@@ -94,7 +94,7 @@ class AttendanceRecord(Base):
     id = Column(Integer, primary_key=True, index=True)
     student_id = Column(Integer, ForeignKey("students.id", ondelete="CASCADE"), nullable=False)
     session_id = Column(Integer, ForeignKey("attendance_sessions.id", ondelete="CASCADE"), nullable=False)
-    timestamp = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    timestamp = Column(DateTime, default=lambda: datetime.now(timezone.utc).replace(tzinfo=None))
     status = Column(String, default="present")  # "present", "late"
     confidence = Column(Float, nullable=True)
 

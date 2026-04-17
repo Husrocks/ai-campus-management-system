@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Camera, GraduationCap, ShieldCheck } from 'lucide-react';
 import { useAuth } from './AuthContext';
-import api from './api';
 
 const Login = ({ onOpenGlobalKiosk }) => {
   const { login, register } = useAuth();

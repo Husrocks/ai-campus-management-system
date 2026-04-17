@@ -441,7 +441,6 @@ const StudentDashboard = () => {
              </div>
           </div>
         )}
-
       </div>
 
       {/* Face Registration Modal */}
