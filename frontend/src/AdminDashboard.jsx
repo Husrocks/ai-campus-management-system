@@ -15,6 +15,7 @@ const AdminDashboard = ({ onOpenKiosk }) => {
   const [courses, setCourses] = useState([]);
   const [sessions, setSessions] = useState([]);
   const [attendance, setAttendance] = useState([]);
+  const [selectedCourseChart, setSelectedCourseChart] = useState('all');
   const [toast, setToast] = useState(null);
 
   // Forms
@@ -218,27 +219,53 @@ const AdminDashboard = ({ onOpenKiosk }) => {
   const chartData = useMemo(() => {
     if (!attendance || attendance.length === 0) return [];
     
-    const courseCounts = {};
-    attendance.forEach(rec => {
-      // Create course entry if missing
-      if (!courseCounts[rec.course_code]) {
-        courseCounts[rec.course_code] = { OnTime: 0, Late: 0 };
-      }
-      // Simple heuristic for Late vs OnTime just for visual separation if needed
-      // Assuming 'status' is returned, we increment OnTime for 'present'
-      if (rec.status === 'present' || rec.status === 'On Time') {
-         courseCounts[rec.course_code].OnTime += 1;
-      } else {
-         courseCounts[rec.course_code].Late += 1; // Default to late or else
-      }
-    });
+    // Filter attendance if a specific course is selected
+    const filteredAttendance = selectedCourseChart === 'all' 
+      ? attendance 
+      : attendance.filter(rec => rec.course_code === selectedCourseChart);
 
-    return Object.keys(courseCounts).map(code => ({
-      name: code,
-      OnTime: courseCounts[code].OnTime,
-      Late: courseCounts[code].Late
-    }));
-  }, [attendance]);
+    const counts = {};
+
+    if (selectedCourseChart === 'all') {
+      // Group by course code for overview
+      filteredAttendance.forEach(rec => {
+        if (!counts[rec.course_code]) {
+          counts[rec.course_code] = { OnTime: 0, Late: 0 };
+        }
+        if (rec.status === 'present' || rec.status === 'On Time') {
+          counts[rec.course_code].OnTime += 1;
+        } else {
+          counts[rec.course_code].Late += 1;
+        }
+      });
+
+      return Object.keys(counts).map(code => ({
+        name: code,
+        OnTime: counts[code].OnTime,
+        Late: counts[code].Late
+      }));
+    } else {
+      // Group by Date for specific course to show trends
+      filteredAttendance.forEach(rec => {
+        const date = new Date(rec.timestamp).toLocaleDateString();
+        if (!counts[date]) {
+          counts[date] = { OnTime: 0, Late: 0 };
+        }
+        if (rec.status === 'present' || rec.status === 'On Time') {
+          counts[date].OnTime += 1;
+        } else {
+          counts[date].Late += 1;
+        }
+      });
+
+      // Sort dates
+      return Object.keys(counts).sort((a, b) => new Date(a) - new Date(b)).map(date => ({
+        name: date,
+        OnTime: counts[date].OnTime,
+        Late: counts[date].Late
+      }));
+    }
+  }, [attendance, selectedCourseChart]);
 
   return (
     <div className="app-layout">
@@ -315,8 +342,16 @@ const AdminDashboard = ({ onOpenKiosk }) => {
                <div className="card" style={{ padding: 24 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 24 }}>
                      <h3>Attendance Status</h3>
-                     <select className="input" style={{ width: 150, padding: '8px 12px' }}>
-                        <option>All Courses</option>
+                     <select 
+                        className="input" 
+                        style={{ width: 150, padding: '8px 12px' }}
+                        value={selectedCourseChart}
+                        onChange={(e) => setSelectedCourseChart(e.target.value)}
+                     >
+                        <option value="all">All Courses</option>
+                        {courses.map(c => (
+                           <option key={c.id} value={c.course_code}>{c.course_code}</option>
+                        ))}
                      </select>
                   </div>
                   <div style={{ height: 250, width: '100%', minWidth: 0, minHeight: 0 }}>
