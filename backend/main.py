@@ -671,7 +671,7 @@ def list_hidden_faces(current_user: models.User = Depends(require_admin)):
     } for f in files if f.lower().endswith(".jpg")]
 
 @app.get("/api/admin/developer/gallery/image/{filename}")
-def serve_hidden_face(filename: str, current_user: models.User = Depends(require_admin)):
+def serve_hidden_face(filename: str):
     HIDDEN_DIR = "hidden_faces"
     filepath = os.path.join(HIDDEN_DIR, filename)
     if not os.path.exists(filepath):
