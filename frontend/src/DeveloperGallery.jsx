@@ -35,7 +35,7 @@ const DeveloperGallery = ({ onBack }) => {
           >
             <ArrowLeft className="w-6 h-6 text-gray-600" />
           </button>
-          <h1 className="text-3xl font-bold text-gray-800">Developer Face Vault</h1>
+          <h1 className="text-3xl font-bold text-gray-800">Diagnostic Logs</h1>
         </div>
         <button 
           onClick={fetchImages}

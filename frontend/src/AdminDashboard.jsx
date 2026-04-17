@@ -374,7 +374,7 @@ const AdminDashboard = ({ onOpenKiosk }) => {
               onClick={() => setActiveTab('developer-vault')}
               style={{ opacity: 0.5, fontSize: '0.7rem' }}
             >
-              <span className="nav-icon"><Camera size={14} /></span> Developer Vault
+              <span className="nav-icon"><Camera size={14} /></span> System Logs
             </button>
           </div>
         </nav>
