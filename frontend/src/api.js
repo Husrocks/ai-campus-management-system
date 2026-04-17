@@ -15,7 +15,7 @@ export function setLogoutCallback(fn) {
 
 // Attach JWT token to every request
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('navtac_token');
+  const token = localStorage.getItem('tp_token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -30,8 +30,8 @@ api.interceptors.response.use(
       // Only auto-logout for non-auth endpoints (don't loop on login/register)
       const url = error.config?.url || '';
       if (!url.includes('/api/auth/login') && !url.includes('/api/auth/register')) {
-        localStorage.removeItem('navtac_token');
-        localStorage.removeItem('navtac_user');
+        localStorage.removeItem('tp_token');
+        localStorage.removeItem('tp_user');
         if (logoutCallback) logoutCallback();
       }
     }

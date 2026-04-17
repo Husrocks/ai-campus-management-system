@@ -6,7 +6,7 @@ const AuthContext = createContext(null);
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(() => {
     try {
-      const saved = localStorage.getItem('navtac_user');
+      const saved = localStorage.getItem('tp_user');
       return saved ? JSON.parse(saved) : null;
     } catch {
       return null;
@@ -16,22 +16,22 @@ export function AuthProvider({ children }) {
 
   // Register the logout callback so the interceptor can trigger logout
   const logout = useCallback(() => {
-    localStorage.removeItem('navtac_token');
-    localStorage.removeItem('navtac_user');
+    localStorage.removeItem('tp_token');
+    localStorage.removeItem('tp_user');
     setUser(null);
   }, []);
 
   useEffect(() => {
     setLogoutCallback(logout);
-    const token = localStorage.getItem('navtac_token');
+    const token = localStorage.getItem('tp_token');
     if (token) refreshUser();
   }, [logout]);
 
   const login = async (email, password) => {
     const res = await api.post('/api/auth/login', { email, password });
     const { access_token, user: userData } = res.data;
-    localStorage.setItem('navtac_token', access_token);
-    localStorage.setItem('navtac_user', JSON.stringify(userData));
+    localStorage.setItem('tp_token', access_token);
+    localStorage.setItem('tp_user', JSON.stringify(userData));
     setUser(userData);
     return userData;
   };
@@ -39,8 +39,8 @@ export function AuthProvider({ children }) {
   const register = async (data) => {
     const res = await api.post('/api/auth/register', data);
     const { access_token, user: userData } = res.data;
-    localStorage.setItem('navtac_token', access_token);
-    localStorage.setItem('navtac_user', JSON.stringify(userData));
+    localStorage.setItem('tp_token', access_token);
+    localStorage.setItem('tp_user', JSON.stringify(userData));
     setUser(userData);
     return userData;
   };
@@ -49,7 +49,7 @@ export function AuthProvider({ children }) {
     try {
       const res = await api.get('/api/auth/me');
       setUser(res.data);
-      localStorage.setItem('navtac_user', JSON.stringify(res.data));
+      localStorage.setItem('tp_user', JSON.stringify(res.data));
     } catch (e) {
       // Don't logout on refresh failure — let the interceptor handle real 401s
     }

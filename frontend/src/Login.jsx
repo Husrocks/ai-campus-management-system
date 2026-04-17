@@ -175,7 +175,7 @@ const Login = ({ onOpenGlobalKiosk }) => {
            <p style={{ marginTop: 12, opacity: 0.8, fontSize: '0.9rem' }}>Open the student check-in kiosk without logging in.</p>
         </div>
         <h2 style={{ letterSpacing: '-0.03em' }}>Unmatched Precision in<br/>Face Recognition</h2>
-        <p>TechPhantom NavTac provides a seamless, secure, and instant check-in experience. Powered by advanced AI models, it ensures that your identity is verified with 99.9% accuracy.</p>
+        <p>TechPhantom provides a seamless, secure, and instant check-in experience. Powered by advanced AI models, it ensures that your identity is verified with 99.9% accuracy.</p>
       </div>
     </div>
   );

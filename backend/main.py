@@ -22,7 +22,7 @@ import face_utils
 # Create tables
 models.Base.metadata.create_all(bind=engine)
 
-app = FastAPI(title="TechPhantom NavTac API", version="2.0.0")
+app = FastAPI(title="TechPhantom AI Campus API", version="2.0.0")
 
 # CORS
 app.add_middleware(

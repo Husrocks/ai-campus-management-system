@@ -11,7 +11,7 @@ import models
 # ==========================================
 # CONFIGURATION
 # ==========================================
-SECRET_KEY = "techphantom-navtac-secret-key-change-in-production-2024"
+SECRET_KEY = "techphantom-cms-secret-key-change-in-production-2024"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 1440  # 24 hours
 

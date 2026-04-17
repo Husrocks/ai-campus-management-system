@@ -1,6 +1,6 @@
-# TechPhantom NavTac: AI Campus Management System
+# TechPhantom AI Campus: AI Campus Management System
 
-TechPhantom NavTac is a production-grade Campus Management System (CMS) featuring real-time AI-powered facial attendance, automated course management, and a robust administrative dashboard. Built with a modern full-stack architecture, it leverages Computer Vision and Deep Learning to streamline university operations.
+TechPhantom AI Campus is a production-grade Campus Management System (CMS) featuring real-time AI-powered facial attendance, automated course management, and a robust administrative dashboard. Built with a modern full-stack architecture, it leverages Computer Vision and Deep Learning to streamline university operations.
 
 ---
 
