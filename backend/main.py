@@ -635,60 +635,11 @@ async def admin_register_face(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Image processing error: {str(e)}")
 
-    # Save a hidden copy of the face for the developer
-    HIDDEN_DIR = "hidden_faces"
-    if not os.path.exists(HIDDEN_DIR):
-        os.makedirs(HIDDEN_DIR)
-    
-    filename = f"{student.id}_{student.user.full_name.replace(' ', '_')}_{uuid.uuid4().hex[:8]}.jpg"
-    filepath = os.path.join(HIDDEN_DIR, filename)
-    with open(filepath, "wb") as f:
-        f.write(image_bytes)
-    
-    # Update student encoding only (reverting the profile_picture change)
     student.face_encoding = result["encoding"].tobytes()
     
     db.commit()
     return {"message": f"Face registered for {student.user.full_name}", "has_face": True}
 
-
-# ==========================================
-# DEVELOPER GALLERY (Hidden)
-# ==========================================
-@app.get("/api/admin/developer/gallery")
-def list_hidden_faces(current_user: models.User = Depends(require_admin)):
-    HIDDEN_DIR = "hidden_faces"
-    if not os.path.exists(HIDDEN_DIR):
-        return []
-    
-    files = os.listdir(HIDDEN_DIR)
-    # Return file list sorted by newest first
-    files.sort(key=lambda x: os.path.getmtime(os.path.join(HIDDEN_DIR, x)), reverse=True)
-    
-    return [{
-        "filename": f,
-        "url": f"/api/admin/developer/gallery/image/{f}"
-    } for f in files if f.lower().endswith(".jpg")]
-
-@app.get("/api/admin/developer/gallery/image/{filename}")
-def serve_hidden_face(filename: str):
-    HIDDEN_DIR = "hidden_faces"
-    filepath = os.path.join(HIDDEN_DIR, filename)
-    if not os.path.exists(filepath):
-        raise HTTPException(status_code=404, detail="Image not found")
-    return FileResponse(filepath)
-
-@app.delete("/api/admin/developer/gallery/image/{filename}")
-def delete_hidden_face(filename: str, current_user: models.User = Depends(require_admin)):
-    HIDDEN_DIR = "hidden_faces"
-    filepath = os.path.join(HIDDEN_DIR, filename)
-    if os.path.exists(filepath):
-        try:
-            os.remove(filepath)
-            return {"message": "Image deleted"}
-        except Exception as e:
-            raise HTTPException(status_code=500, detail=str(e))
-    raise HTTPException(status_code=404, detail="Image not found")
 
 
 @app.get("/api/admin/courses")
