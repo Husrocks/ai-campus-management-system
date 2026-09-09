@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CV — Hussnain Bashir</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --accent: #1a56db;
+      --text:   #1e293b;
+      --muted:  #64748b;
+      --border: #e2e8f0;
+    }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #f1f5f9;
+      display: flex;
+      justify-content: center;
+      padding: 1.5rem 0.5rem;
+      color: var(--text);
+    }
+    .page {
+      background: #fff;
+      width: 210mm;
+      min-height: 297mm;
+      padding: 8.5mm 11mm 8mm 11mm;
+      box-shadow: 0 4px 40px rgba(0,0,0,.12);
+    }
+
+    /* ── HEADER ── */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      border-bottom: 2px solid var(--accent);
+      padding-bottom: 5px;
+      margin-bottom: 7px;
+    }
+    .header h1 { font-size: 20px; font-weight: 700; }
+    .header .title { font-size: 10px; font-weight: 600; color: var(--accent); margin-top: 2px; }
+    .header-right { text-align: right; font-size: 9.5px; color: var(--muted); line-height: 1.6; }
+    .header-right a { color: var(--muted); text-decoration: none; }
+
+    /* ── SECTION ── */
+    section { margin-bottom: 7px; }
+    .section-title {
+      font-size: 8.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--accent);
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 2px;
+      margin-bottom: 5px;
+    }
+
+    /* ── PROFILE ── */
+    .profile-text { font-size: 9.5px; line-height: 1.5; color: var(--muted); }
+
+    /* ── TWO-COL SKILLS/CERTS ── */
+    .two-col { display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 14px; }
+    .skill-row { font-size: 9.5px; margin-bottom: 2px; }
+    .skill-row strong { color: var(--text); font-weight: 600; }
+    .skill-row span { color: var(--muted); }
+
+    /* ── PROJECTS / EXPERIENCE ── */
+    .entry { margin-bottom: 5.5px; }
+    .entry-header { display: flex; justify-content: space-between; align-items: baseline; }
+    .entry-title { font-size: 10px; font-weight: 700; color: var(--text); }
+    .entry-date  { font-size: 8.8px; color: var(--muted); font-weight: 500; white-space: nowrap; }
+    .entry-sub   { font-size: 8.8px; color: var(--accent); font-weight: 500; margin: 1px 0 2px; }
+    .entry-sub a { color: var(--accent); text-decoration: underline; }
+    .entry ul { padding-left: 11px; list-style: disc; }
+    .entry li {
+      font-size: 9.5px;
+      color: var(--muted);
+      line-height: 1.42;
+      margin-bottom: 1px;
+    }
+    .entry li strong { color: var(--text); font-weight: 600; }
+
+    /* ── EVENTS ── */
+    .events-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 3px 8px;
+    }
+    .event-item {
+      font-size: 9px;
+      color: var(--muted);
+      padding: 2px 6px;
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      background: #f8fafc;
+      line-height: 1.5;
+    }
+    .event-item strong { color: var(--text); font-weight: 600; display: block; }
+
+    /* ── EDUCATION ── */
+    .edu-row { display: flex; justify-content: space-between; align-items: flex-start; }
+    .edu-degree { font-size: 10px; font-weight: 700; }
+    .edu-detail { font-size: 9px; color: var(--muted); margin-top: 1px; }
+    .edu-date   { font-size: 9px; color: var(--muted); font-weight: 500; }
+
+    @media print {
+      body { background: #fff; padding: 0; }
+      .page { box-shadow: none; width: 100%; padding: 5mm 8mm; }
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HEADER -->
+  <header class="header">
+    <div>
+      <h1>Hussnain Bashir</h1>
+      <div class="title">AI  Full-Stack Developer </div>
+    </div>
+    <div class="header-right">
+      zurqulnan@gmail.com &nbsp;|&nbsp; (+92) 307-5345242 &nbsp;|&nbsp; Lahore, Pakistan<br>
+      <a href="https://www.linkedin.com/in/hussnain-bashir" target="_blank">LinkedIn</a> &nbsp;|&nbsp;
+      <a href="https://github.com/Husrocks" target="_blank">GitHub</a>
+    </div>
+  </header>
+
+  <!-- PROFILE -->
+  <section>
+    <div class="section-title">Profile</div>
+    <p class="profile-text">Computer Science student at IAC specializing in AI/ML with hands-on experience building end-to-end intelligent systems   from fine-tuning LLMs and deploying computer vision pipelines to developing Blockchain DApps with Solidity. Proficient in Python, React.js, FastAPI, and C++, with a passion for applying AI, Web3, and automation to solve real-world problems.</p>
+  </section>
+
+  <!-- SKILLS + CERTS -->
+  <section>
+    <div class="two-col">
+      <div>
+        <div class="section-title">Technical Skills</div>
+        <div class="skill-row"><strong>Languages:</strong> <span>Python, JavaScript, C++, Solidity, SQL</span></div>
+        <div class="skill-row"><strong>AI / ML:</strong> <span>Dlib, YOLOv8, OpenCV, Flan-T5, HuggingFace, Scikit-learn, Pandas, RNN, CNN</span></div>
+        <div class="skill-row"><strong>NLP / RAG:</strong> <span>NLP pipelines, RAG, LangChain, Vector DBs, Embeddings, Transformers</span></div>
+        <div class="skill-row"><strong>Agentic AI:</strong> <span>AI Agents, Agentic Workflows, AI Automation, n8n, Prompt Engineering</span></div>
+        <div class="skill-row"><strong>Full-Stack:</strong> <span>React.js, TypeScript, FastAPI, Node.js, REST APIs, WebSocket</span></div>
+        <div class="skill-row"><strong>Blockchain:</strong> <span>Solidity, Smart Contracts, DApps, Web3.js, Ethers.js</span></div>
+        <div class="skill-row"><strong>DevOps / DB:</strong> <span>Docker, Nginx, Vercel, PostgreSQL, SQLite, Git</span></div>
+      </div>
+      <div>
+        <div class="section-title">Certifications</div>
+        <div class="skill-row"><strong>AI &amp; Machine Learning</strong> <span>· NAVTTC</span></div>
+        <div class="skill-row"><strong>Python Essentials 1</strong> <span>· Cisco Networking Academy</span></div>
+        <div class="skill-row"><strong>JavaScript Essentials 1</strong> <span>· Cisco Networking Academy</span></div>
+        <div class="skill-row"><strong>Back-End Web Development</strong> <span>· LinkedIn Learning</span></div>
+        <div class="skill-row"><strong>Problem Solving in C++ / Python</strong> <span>· DSA Practice</span></div>
+        <div class="skill-row"><strong>Intro to SQL</strong> <span>· Kaggle</span></div>
+        <div class="skill-row"><strong>Advanced SQL</strong> <span>· Kaggle</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROJECTS -->
+  <section>
+    <div class="section-title">Projects</div>
+
+    <div class="entry">
+      <div class="entry-header">
+        <div class="entry-title">TechPhantom AI Campus Management System</div>
+        <div class="entry-date">January 2026 – Present</div>
+      </div>
+      <div class="entry-sub">Python · FastAPI · React.js · YOLOv8 · Dlib · Docker · WebSocket · JWT &nbsp;·&nbsp; <a href="https://ai-campus-management-system.vercel.app/" target="_blank">Live Demo</a></div>
+      <ul>
+        <li>Engineered a <strong>production-grade attendance system</strong> replacing manual roll-calls with real-time facial recognition using <strong>dlib 128D embeddings</strong> and YOLOv8 person detection.</li>
+        <li>Architected a <strong>secure FastAPI backend</strong> with JWT Role-Based Access Control (RBAC) and a real-time WebSocket kiosk deployed via Docker and Vercel.</li>
+      </ul>
+    </div>
+
+    <div class="entry">
+      <div class="entry-header">
+        <div class="entry-title">SmartSummarize <br> AI Email Summarizer</div>
+        <div class="entry-date">April 2026</div>
+      </div>
+      <div class="entry-sub">Python · Flan-T5 · FastAPI · HuggingFace · Chrome Extension · GitHub Pages &nbsp;·&nbsp; <a href="https://husrocks.github.io/smart-email-summarizer/" target="_blank">Live Demo</a></div>
+      <ul>
+        <li>Fine-tuned a <strong>Google Flan-T5 model</strong> on the AESLC email dataset for abstractive summarization, reducing reading time by an estimated 70%.</li>
+        <li>Deployed a <strong>FastAPI inference backend</strong> to Hugging Face Spaces and built a Chrome extension that injects a summarize button directly into Gmail's UI.</li>
+      </ul>
+    </div>
+
+    <div class="entry">
+      <div class="entry-header">
+        <div class="entry-title">HAVI Enterprise RAG Chatbot</div>
+        <div class="entry-date">February 2026 – April 2026</div>
+      </div>
+      <div class="entry-sub">Python · LangChain · Vector DB · FastAPI · Streamlit &nbsp;·&nbsp; <a href="https://havi-enterprise-rag-nywkvpvaeetnivpmmu7mkb.streamlit.app/" target="_blank">Live Demo</a></div>
+      <ul>
+        <li>Architected a <strong>production-grade RAG chatbot</strong> with role-based access control, transitioning from a CSV prototype to a modular enterprise data ingestion pipeline.</li>
+        <li>Designed a <strong>multi-tenant retrieval system</strong> with LangChain, vector embeddings, and a FastAPI backend for real-time AI query responses.</li>
+      </ul>
+    </div>
+
+    <div class="entry">
+      <div class="entry-header">
+        <div class="entry-title">UniFi <br> Blockchain DApp</div>
+        <div class="entry-date">July 2025 – September 2025</div>
+      </div>
+      <div class="entry-sub">Solidity · JavaScript · Web3.js · Ethers.js · Smart Contracts &nbsp;·&nbsp; <a href="https://husrocks.github.io/unifi-dapp/" target="_blank">Live Demo</a></div>
+      <ul>
+        <li>Developed a <strong>decentralized application</strong> with Solidity smart contracts implementing secure on-chain logic and MetaMask wallet connectivity.</li>
+        <li>Demonstrated expertise in <strong>Web3 development patterns</strong> including contract deployment, ABI integration, and frontend-to-chain interaction.</li>
+      </ul>
+    </div>
+
+    <div class="entry">
+      <div class="entry-header">
+        <div class="entry-title">Automata Converter <br> Theory of Automata Educational Tool</div>
+        <div class="entry-date">July 2025</div>
+      </div>
+      <div class="entry-sub">JavaScript · HTML/CSS · Finite Automata · GitHub Pages &nbsp;·&nbsp; <a href="https://husrocks.github.io/Automata-Converter/" target="_blank">Live Demo</a></div>
+      <ul>
+        <li>Built an <strong>interactive web-based academic tool</strong> for CS students enabling visual NFA → DFA conversion and regular expression matching with no backend dependency.</li>
+        <li>Designed an intuitive UI simplifying complex automata concepts as a <strong>supplementary learning resource</strong> for university Theory of Automata courses.</li>
+      </ul>
+    </div>
+
+    <div class="entry">
+      <div class="entry-header">
+        <div class="entry-title">Telecom Customer Churn Analysis</div>
+        <div class="entry-date">2025</div>
+      </div>
+      <div class="entry-sub">Python · Pandas · Scikit-learn · Matplotlib · Seaborn · Machine Learning</div>
+      <ul>
+        <li>Conducted end-to-end <strong>churn prediction analysis</strong> applying EDA, feature engineering, and ML classifiers (Logistic Regression, Random Forest) to identify at-risk customers.</li>
+        <li>Visualized key churn drivers and delivered actionable insights on contract type and service usage with <strong>model accuracy exceeding 80%</strong>.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- EXPERIENCE -->
+  <section>
+    <div class="section-title">Experience</div>
+    <div class="entry">
+      <div class="entry-header">
+        <div class="entry-title">Student Life Ambassador</div>
+        <div class="entry-date">June 2023 – August 2023</div>
+      </div>
+      <div class="entry-sub">Lahore Garrison University (LGU) · Lahore, Punjab</div>
+      <ul>
+        <li>Mentored <strong>~50 students</strong> joining the ByteCamp program by holding advisory meetings covering academics, professional development, and university life.</li>
+        <li>Coordinated social programs promoting <strong>community building</strong> and helping new students acclimate to Lahore and campus culture.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- WORKSHOPS & EVENTS -->
+  <section>
+    <div class="section-title">Workshops &amp; Events</div>
+    <div class="events-grid">
+      <div class="event-item"><strong>DevFest 2024 &amp; 2025</strong>Google Developer Group · Lahore</div>
+      <div class="event-item"><strong>Build with AI Workshop</strong>Arbisoft · 2026</div>
+      <div class="event-item"><strong>Build with AI Workshop</strong>FAST NUCES · 2026</div>
+      <div class="event-item"><strong>TechTehwar</strong>Lahore Garrison University</div>
+      <div class="event-item"><strong>Blockchain Event</strong>Institute for Art &amp; Culture · Lahore</div>
+    </div>
+  </section>
+
+  <!-- EDUCATION -->
+  <section>
+    <div class="section-title">Education</div>
+    <div class="edu-row">
+      <div>
+        <div class="edu-degree">Bachelor of Science in Computer Science</div>
+        <div class="edu-detail">Institute for Art and Culture (IAC) · Lahore, Punjab</div>
+        <div class="edu-detail">Concentration: Artificial Intelligence · ML · NLP · Web Applications</div>
+      </div>
+      <div class="edu-date">Expected Graduation: May 2027</div>
+    </div>
+  </section>
+
+</div>
+</body>
+</html>

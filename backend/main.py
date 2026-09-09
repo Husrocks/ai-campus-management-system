@@ -38,11 +38,12 @@ app.add_middleware(
 # AUTO-CREATE DEFAULT ADMIN ON STARTUP
 # ==========================================
 @app.on_event("startup")
-def create_default_admin():
+def create_default_accounts():
     db = SessionLocal()
     try:
-        existing = db.query(models.User).filter(models.User.email == "admin@techphantom.com").first()
-        if not existing:
+        # Create default admin
+        existing_admin = db.query(models.User).filter(models.User.email == "admin@techphantom.com").first()
+        if not existing_admin:
             admin = models.User(
                 email="admin@techphantom.com",
                 password_hash=hash_password("admin123"),
@@ -52,6 +53,27 @@ def create_default_admin():
             db.add(admin)
             db.commit()
             print("[OK] Default admin created: admin@techphantom.com / admin123")
+
+        # Create demo student
+        existing_student = db.query(models.User).filter(models.User.email == "student@demo.com").first()
+        if not existing_student:
+            student_user = models.User(
+                email="student@demo.com",
+                password_hash=hash_password("demo123"),
+                full_name="Demo Student",
+                role="student",
+            )
+            db.add(student_user)
+            db.flush()  # get the new user id before committing
+            student_profile = models.Student(
+                user_id=student_user.id,
+                roll_number="DEMO-001",
+                department="Computer Science",
+                phone="+1-000-000-0000",
+            )
+            db.add(student_profile)
+            db.commit()
+            print("[OK] Demo student created: student@demo.com / demo123")
     finally:
         db.close()
 

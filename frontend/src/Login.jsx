@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Camera, GraduationCap, ShieldCheck } from 'lucide-react';
+import { Camera, GraduationCap, ShieldCheck, Zap } from 'lucide-react';
 import { useAuth } from './AuthContext';
 
 const Login = ({ onOpenGlobalKiosk }) => {
@@ -8,6 +8,7 @@ const Login = ({ onOpenGlobalKiosk }) => {
   const [role, setRole] = useState('student'); // 'student' or 'admin'
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [demoLoading, setDemoLoading] = useState(null); // 'student' | 'admin' | null
 
   // Form states
   const [email, setEmail] = useState('');
@@ -58,6 +59,21 @@ const Login = ({ onOpenGlobalKiosk }) => {
       }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDemoLogin = async (demoRole) => {
+    setError('');
+    setDemoLoading(demoRole);
+    try {
+      const credentials = demoRole === 'admin'
+        ? { email: 'admin@techphantom.com', password: 'admin123' }
+        : { email: 'student@demo.com', password: 'demo123' };
+      await login(credentials.email, credentials.password);
+    } catch (err) {
+      setError('Demo login failed. Please make sure the backend server is running.');
+    } finally {
+      setDemoLoading(null);
     }
   };
 
@@ -164,6 +180,63 @@ const Login = ({ onOpenGlobalKiosk }) => {
             ) : (
               <>Already have an account? <span onClick={() => { setIsLogin(true); setError(''); }}>Sign in</span></>
             )}
+          </div>
+
+          {/* ── Demo Access ── */}
+          <div style={{
+            marginTop: 24,
+            padding: '16px 20px',
+            background: 'rgba(var(--primary-rgb, 99,102,241), 0.06)',
+            border: '1px dashed rgba(var(--primary-rgb, 99,102,241), 0.3)',
+            borderRadius: 12,
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
+              <Zap size={14} style={{ color: 'var(--primary)' }} />
+              <span style={{ fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--primary)' }}>
+                Quick Demo Access
+              </span>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+              <button
+                type="button"
+                onClick={() => handleDemoLogin('student')}
+                disabled={demoLoading !== null}
+                style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
+                  padding: '10px 12px', borderRadius: 10, border: '1.5px solid rgba(99,102,241,0.4)',
+                  background: 'rgba(99,102,241,0.08)', color: 'var(--primary)',
+                  fontWeight: 700, fontSize: '0.82rem', cursor: 'pointer',
+                  transition: 'all 0.18s ease',
+                  opacity: demoLoading !== null ? 0.6 : 1,
+                }}
+                onMouseEnter={e => e.currentTarget.style.background = 'rgba(99,102,241,0.18)'}
+                onMouseLeave={e => e.currentTarget.style.background = 'rgba(99,102,241,0.08)'}
+              >
+                <GraduationCap size={15} />
+                {demoLoading === 'student' ? 'Logging in…' : 'Demo Student'}
+              </button>
+              <button
+                type="button"
+                onClick={() => handleDemoLogin('admin')}
+                disabled={demoLoading !== null}
+                style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
+                  padding: '10px 12px', borderRadius: 10, border: '1.5px solid rgba(0,210,160,0.4)',
+                  background: 'rgba(0,210,160,0.08)', color: 'var(--success, #00d2a0)',
+                  fontWeight: 700, fontSize: '0.82rem', cursor: 'pointer',
+                  transition: 'all 0.18s ease',
+                  opacity: demoLoading !== null ? 0.6 : 1,
+                }}
+                onMouseEnter={e => e.currentTarget.style.background = 'rgba(0,210,160,0.18)'}
+                onMouseLeave={e => e.currentTarget.style.background = 'rgba(0,210,160,0.08)'}
+              >
+                <ShieldCheck size={15} />
+                {demoLoading === 'admin' ? 'Logging in…' : 'Demo Admin'}
+              </button>
+            </div>
+            <p style={{ margin: '10px 0 0', fontSize: '0.72rem', opacity: 0.55, textAlign: 'center' }}>
+              One-click login · No signup needed
+            </p>
           </div>
         </div>
       </div>
