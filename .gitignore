@@ -48,3 +48,4 @@ yarn-error.log*
 # =====================
 backend/yolov8n.pt
 backend/hidden_faces/
+backend/uploads/
