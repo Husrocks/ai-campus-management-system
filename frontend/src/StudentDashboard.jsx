@@ -356,7 +356,7 @@ const StudentDashboard = () => {
         {activeTab === 'profile' && (
           <div className="animate-in flex-col gap-lg" style={{ maxWidth: 800 }}>
              <div className="card" style={{ padding: 40 }}>
-                <div style={{ display: 'grid', gridTemplateColumns: 'minmax(150px, 1fr) 2fr', gap: 40, alignItems: 'flex-start' }}>
+                <div className="grid grid-layout-profile" style={{ gap: 40, alignItems: 'flex-start' }}>
                    {/* Avatar Section */}
                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
                       <div style={{ position: 'relative' }}>

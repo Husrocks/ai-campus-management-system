@@ -478,7 +478,7 @@ const AdminDashboard = ({ onOpenKiosk }) => {
             </div>
 
             {/* 2. CHARTS ROW */}
-            <div className="grid" style={{ gridTemplateColumns: '2fr 1fr', marginBottom: 32 }}>
+            <div className="grid grid-layout-2-1" style={{ marginBottom: 32 }}>
                
                {/* Attendance Bar Chart */}
                <div className="card" style={{ padding: 24 }}>
@@ -548,7 +548,7 @@ const AdminDashboard = ({ onOpenKiosk }) => {
             </div>
 
             {/* 3. BOTTOM ROW: BANNER + LISTS */}
-            <div className="grid" style={{ gridTemplateColumns: '2fr 1fr' }}>
+            <div className="grid grid-layout-2-1">
                
                <div className="flex-col gap-lg">
                   {/* Premium Scanner Banner */}
@@ -817,7 +817,7 @@ const AdminDashboard = ({ onOpenKiosk }) => {
         {activeTab === 'profile' && (
           <div className="animate-in flex-col gap-lg" style={{ maxWidth: 800 }}>
              <div className="card" style={{ padding: 40 }}>
-                <div style={{ display: 'grid', gridTemplateColumns: 'minmax(150px, 1fr) 2fr', gap: 40, alignItems: 'flex-start' }}>
+                <div className="grid grid-layout-profile" style={{ gap: 40, alignItems: 'flex-start' }}>
                    {/* Avatar Section */}
                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
                       <div style={{ position: 'relative' }}>

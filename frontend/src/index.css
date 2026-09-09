@@ -98,6 +98,7 @@ h4 { font-size: 1rem; }
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-sm);
   transition: all var(--transition);
+  min-width: 0; /* allows children like tables to shrink and scroll */
 }
 
 .card:hover, .glass-card:hover {
@@ -489,6 +490,8 @@ tbody tr:last-child td {
 .grid-2 { grid-template-columns: repeat(2, 1fr); }
 .grid-3 { grid-template-columns: repeat(3, 1fr); }
 .grid-4 { grid-template-columns: repeat(4, 1fr); }
+.grid-layout-2-1 { grid-template-columns: 2fr 1fr; }
+.grid-layout-profile { grid-template-columns: minmax(150px, 1fr) 2fr; }
 
 @media (max-width: 1200px) {
   .grid-4 { grid-template-columns: repeat(2, 1fr); }
@@ -507,7 +510,7 @@ tbody tr:last-child td {
 
 @media (max-width: 768px) {
   /* --- Grids collapse to 1 col --- */
-  .grid-4, .grid-3, .grid-2 { grid-template-columns: 1fr; }
+  .grid-4, .grid-3, .grid-2, .grid-layout-2-1, .grid-layout-profile { grid-template-columns: 1fr !important; }
 
   /* --- Sidebar: hidden on mobile, replaced by bottom nav --- */
   .sidebar {
