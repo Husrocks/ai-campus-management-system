@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { BarChart2, ClipboardList, GraduationCap, BookOpen, LogOut, Camera, Trash2, Download, CheckCircle2, XCircle, TrendingUp, Users, Activity, User, Upload } from 'lucide-react';
 import { useAuth } from './AuthContext';
 import api from './api';
@@ -1044,8 +1044,6 @@ const AdminDashboard = ({ onOpenKiosk }) => {
             </div>
          </div>
       )}
-
-      </div>
 
       {/* â”€â”€ MOBILE: Bottom tab navigation â”€â”€ */}
       <nav className="bottom-nav" aria-label="Main navigation">

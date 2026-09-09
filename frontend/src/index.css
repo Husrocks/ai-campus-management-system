@@ -190,9 +190,9 @@ h4 { font-size: 1rem; }
   background: var(--bg-secondary);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
+  font-size: 16px; /* Prevents iOS auto-zoom */
   color: var(--text-primary);
   font-family: var(--font);
-  font-size: 0.95rem;
   transition: all var(--transition);
   outline: none;
 }
