@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import { BarChart2, ClipboardList, GraduationCap, BookOpen, LogOut, Camera, Trash2, Download, CheckCircle2, XCircle, TrendingUp, Users, Activity, User, Upload } from 'lucide-react';
+import { BarChart2, ClipboardList, GraduationCap, BookOpen, LogOut, Camera, Trash2, Download, CheckCircle2, XCircle, TrendingUp, Users, Activity, User, Upload, Menu } from 'lucide-react';
 import { useAuth } from './AuthContext';
 import api from './api';
 import Webcam from 'react-webcam';
@@ -10,6 +10,7 @@ import {
 const AdminDashboard = ({ onOpenKiosk }) => {
   const { user, logout } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [stats, setStats] = useState({});
   const [students, setStudents] = useState([]);
   const [courses, setCourses] = useState([]);
@@ -343,8 +344,25 @@ const AdminDashboard = ({ onOpenKiosk }) => {
 
   return (
     <div className="app-layout">
+      {/* Mobile Header */}
+      <div className="mobile-header">
+        <div className="brand" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div className="brand-icon" style={{ width: '32px', height: '32px', fontSize: '1rem' }}>TP</div>
+          <div className="brand-text" style={{ fontSize: '1.1rem', fontWeight: 800 }}>Tech<span style={{ color: 'var(--primary)' }}>Phantom</span></div>
+        </div>
+        <button className="btn btn-ghost" style={{ padding: '8px' }} onClick={() => setIsSidebarOpen(true)}>
+          <Menu size={24} />
+        </button>
+      </div>
+
+      {/* Sidebar Overlay */}
+      <div 
+        className={`sidebar-overlay ${isSidebarOpen ? 'open' : ''}`} 
+        onClick={() => setIsSidebarOpen(false)}
+      ></div>
+
       {/* Sidebar */}
-      <aside className="sidebar">
+      <aside className={`sidebar ${isSidebarOpen ? 'open' : ''}`}>
         <div className="sidebar-header">
           <div className="brand" onClick={() => window.location.href = '/'} style={{ cursor: 'pointer' }}>
             <div className="brand-icon">TP</div>
@@ -352,19 +370,19 @@ const AdminDashboard = ({ onOpenKiosk }) => {
           </div>
         </div>
         <nav className="sidebar-nav">
-          <button className={`nav-item ${activeTab === 'overview' ? 'active' : ''}`} onClick={() => setActiveTab('overview')}>
+          <button className={`nav-item ${activeTab === 'overview' ? 'active' : ''}`} onClick={() => { setActiveTab('overview'); setIsSidebarOpen(false); }}>
             <span className="nav-icon"><BarChart2 size={18} /></span> Dashboard
           </button>
-          <button className={`nav-item ${activeTab === 'attendance' ? 'active' : ''}`} onClick={() => setActiveTab('attendance')}>
+          <button className={`nav-item ${activeTab === 'attendance' ? 'active' : ''}`} onClick={() => { setActiveTab('attendance'); setIsSidebarOpen(false); }}>
             <span className="nav-icon"><ClipboardList size={18} /></span> Attendance List
           </button>
-          <button className={`nav-item ${activeTab === 'students' ? 'active' : ''}`} onClick={() => setActiveTab('students')}>
+          <button className={`nav-item ${activeTab === 'students' ? 'active' : ''}`} onClick={() => { setActiveTab('students'); setIsSidebarOpen(false); }}>
             <span className="nav-icon"><GraduationCap size={18} /></span> Students
           </button>
-          <button className={`nav-item ${activeTab === 'courses' ? 'active' : ''}`} onClick={() => setActiveTab('courses')}>
+          <button className={`nav-item ${activeTab === 'courses' ? 'active' : ''}`} onClick={() => { setActiveTab('courses'); setIsSidebarOpen(false); }}>
             <span className="nav-icon"><BookOpen size={18} /></span> Courses
           </button>
-          <button className={`nav-item ${activeTab === 'profile' ? 'active' : ''}`} onClick={() => setActiveTab('profile')}>
+          <button className={`nav-item ${activeTab === 'profile' ? 'active' : ''}`} onClick={() => { setActiveTab('profile'); setIsSidebarOpen(false); }}>
             <span className="nav-icon"><User size={18} /></span> Profile
           </button>
         </nav>
