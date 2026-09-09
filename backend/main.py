@@ -389,9 +389,23 @@ async def upload_face(
         raise HTTPException(status_code=500, detail=f"Image processing error: {str(e)}")
 
     if not result or "encoding" not in result:
-        raise HTTPException(status_code=400, detail="No face detected. Please ensure your face is clearly visible.")
+        raise HTTPException(status_code=400, detail="No face detected. Please ensure your face is clearly visible in a well-lit photo.")
 
     sp.face_encoding = result["encoding"].tobytes()
+
+    # Save the uploaded image as the student's profile picture
+    try:
+        upload_dir = "uploads/profiles"
+        os.makedirs(upload_dir, exist_ok=True)
+        ext = os.path.splitext(file.filename)[1] if file.filename else ".jpg"
+        filename = f"{uuid.uuid4()}{ext}"
+        filepath = os.path.join(upload_dir, filename)
+        with open(filepath, "wb") as f:
+            f.write(image_bytes)
+        current_user.profile_picture = filepath
+    except Exception:
+        pass  # Profile picture save is best-effort; don't fail the whole request
+
     db.commit()
     return {"message": "Face registered successfully", "has_face": True}
 
@@ -657,8 +671,27 @@ async def admin_register_face(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Image processing error: {str(e)}")
 
+    if not result or "encoding" not in result:
+        raise HTTPException(
+            status_code=400,
+            detail="No face detected in the uploaded image. Please use a clear, well-lit photo showing the student's face."
+        )
+
     student.face_encoding = result["encoding"].tobytes()
-    
+
+    # Save the uploaded image as the student's profile picture
+    try:
+        upload_dir = "uploads/profiles"
+        os.makedirs(upload_dir, exist_ok=True)
+        ext = os.path.splitext(file.filename)[1] if file.filename else ".jpg"
+        filename = f"{uuid.uuid4()}{ext}"
+        filepath = os.path.join(upload_dir, filename)
+        with open(filepath, "wb") as f:
+            f.write(image_bytes)
+        student.user.profile_picture = filepath
+    except Exception:
+        pass  # Profile picture save is best-effort; don't fail the whole request
+
     db.commit()
     return {"message": f"Face registered for {student.user.full_name}", "has_face": True}
 
