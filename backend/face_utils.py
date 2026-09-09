@@ -36,8 +36,13 @@ try:
     face_cascade = cv2.CascadeClassifier(
         cv2.data.haarcascades + 'haarcascade_frontalface_default.xml'
     )
-    OPENCV_CASCADE_AVAILABLE = True
-    print("[OK] OpenCV Haar cascade loaded.")
+    if face_cascade.empty():
+        face_cascade = None
+        OPENCV_CASCADE_AVAILABLE = False
+        print("[WARNING] cv2.CascadeClassifier empty (XML not found).")
+    else:
+        OPENCV_CASCADE_AVAILABLE = True
+        print("[OK] OpenCV Haar cascade loaded.")
 except Exception:
     face_cascade = None
     OPENCV_CASCADE_AVAILABLE = False
@@ -109,9 +114,14 @@ def get_face_encoding(image_bytes: bytes):
         # ── Tier 3: OpenCV Haar cascade ─────────────────────────────────────
         if OPENCV_CASCADE_AVAILABLE and face_cascade is not None:
             gray = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2GRAY)
-            faces = face_cascade.detectMultiScale(
-                gray, scaleFactor=1.1, minNeighbors=5, minSize=(60, 60)
-            )
+            try:
+                faces = face_cascade.detectMultiScale(
+                    gray, scaleFactor=1.1, minNeighbors=5, minSize=(60, 60)
+                )
+            except Exception as e:
+                print(f"[ERROR] Cascade detectMultiScale failed: {e}")
+                faces = []
+                
             if len(faces) > 0:
                 x, y, w, h = max(faces, key=lambda f: f[2] * f[3])
                 encoding = _histogram_encoding(rgb_img, x, y, w, h)
