@@ -452,9 +452,39 @@ For production, replace development secrets and SQLite with appropriate producti
 
 ---
 
+# 🧪 How to Use the Demo (Quick Start)
+
+Want to test the facial recognition attendance system right away? Follow these steps:
+
+### 1. Login as Admin
+1. Open the application.
+2. Click the **"Demo Admin"** button on the login screen.
+3. You are now logged into the Administrative Dashboard.
+
+### 2. Create a Course & Session
+1. Navigate to **Courses** in the sidebar.
+2. Click **"Add Course"**, enter a name (e.g., "AI 101"), and save.
+3. Navigate to **Attendance Sessions**.
+4. Click **"New Session"**, select your newly created course, and start it. (The scanner only marks attendance for active sessions).
+
+### 3. Enroll the Demo Student & Register Face
+1. Navigate to **Students** in the sidebar.
+2. You will see a pre-created "Demo Student". Click the **Edit** icon (pencil).
+3. Under **Enrolled Courses**, select the course you just created and click **Save**.
+4. Click the **Face Registration** icon (camera) next to the Demo Student.
+5. Upload a clear picture of your face. (This saves your facial embedding to the database).
+
+### 4. Test the Scanner!
+1. Navigate to the **Live Kiosk** from the sidebar.
+2. Allow camera permissions.
+3. Step in front of the camera.
+4. The system will detect your face, match it against the registered demo student, check the active session, and mark you as **Present** with a green success message!
+
+---
+
 # 🧪 Facial Attendance Setup
 
-Before using automated attendance:
+Before using automated attendance in a real-world scenario:
 
 ### 1. Create Student
 
