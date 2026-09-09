@@ -4,6 +4,7 @@ websockets
 sqlalchemy
 # face_recognition (Commented out to bypass dlib compilation)
 opencv-contrib-python-headless
+mediapipe
 python-multipart
 numpy
 pydantic
