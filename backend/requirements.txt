@@ -2,7 +2,7 @@ fastapi
 uvicorn
 websockets
 sqlalchemy
-# face_recognition (Commented out to bypass dlib compilation)
+face_recognition
 opencv-contrib-python-headless
 mediapipe
 python-multipart
