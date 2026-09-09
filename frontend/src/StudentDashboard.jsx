@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { BarChart2, ClipboardList, BookOpen, User, LogOut, Camera, Smile, CheckCircle2, Upload, Menu } from 'lucide-react';
+import { BarChart2, ClipboardList, BookOpen, User, LogOut, Camera, Smile, CheckCircle2, Upload } from 'lucide-react';
 import { useAuth } from './AuthContext';
 import api from './api';
 import Webcam from 'react-webcam';
@@ -11,7 +11,6 @@ const StudentDashboard = () => {
   const [availableCourses, setAvailableCourses] = useState([]);
   const [attendance, setAttendance] = useState([]);
   const [activeTab, setActiveTab] = useState('overview');
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const [toast, setToast] = useState(null);
   const [faceUploading, setFaceUploading] = useState(false);
@@ -150,70 +149,66 @@ const StudentDashboard = () => {
 
   return (
     <div className="app-layout">
-      {/* Mobile Header */}
+
+      {/* ── MOBILE: Fixed top header ── */}
       <div className="mobile-header">
-        <div className="brand" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <div className="brand-icon" style={{ width: '32px', height: '32px', fontSize: '1rem' }}>TP</div>
-          <div className="brand-text" style={{ fontSize: '1.1rem', fontWeight: 800 }}>Tech<span style={{ color: 'var(--primary)' }}>Phantom</span></div>
+        <div className="mh-brand">
+          <div className="mh-logo">TP</div>
+          <div className="mh-title">Tech<span>Phantom</span></div>
         </div>
-        <button className="btn btn-ghost" style={{ padding: '8px' }} onClick={() => setIsSidebarOpen(true)}>
-          <Menu size={24} />
-        </button>
+        <div className="mh-right">
+          <div className="mh-avatar" onClick={() => setActiveTab('profile')}>
+            {user?.profile_picture
+              ? <img src={api.defaults.baseURL + user.profile_picture} alt="Profile" />
+              : initials
+            }
+          </div>
+        </div>
       </div>
 
-      {/* Sidebar Overlay */}
-      <div 
-        className={`sidebar-overlay ${isSidebarOpen ? 'open' : ''}`} 
-        onClick={() => setIsSidebarOpen(false)}
-      ></div>
-
-      {/* Sidebar */}
-      <aside className={`sidebar ${isSidebarOpen ? 'open' : ''}`}>
+      {/* ── DESKTOP: Fixed sidebar ── */}
+      <aside className="sidebar">
         <div className="sidebar-header">
-          <div className="brand" onClick={() => window.location.href = '/'} style={{ cursor: 'pointer' }}>
+          <div className="brand" style={{ cursor: 'pointer' }}>
             <div className="brand-icon">TP</div>
             <div className="brand-text">Tech<span>Phantom</span></div>
           </div>
         </div>
         <nav className="sidebar-nav">
-          <button className={`nav-item ${activeTab === 'overview' ? 'active' : ''}`} onClick={() => { setActiveTab('overview'); setIsSidebarOpen(false); }}>
+          <button className={`nav-item ${activeTab === 'overview' ? 'active' : ''}`} onClick={() => setActiveTab('overview')}>
             <span className="nav-icon"><BarChart2 size={18} /></span> Overview
           </button>
-          <button className={`nav-item ${activeTab === 'attendance' ? 'active' : ''}`} onClick={() => { setActiveTab('attendance'); setIsSidebarOpen(false); }}>
+          <button className={`nav-item ${activeTab === 'attendance' ? 'active' : ''}`} onClick={() => setActiveTab('attendance')}>
             <span className="nav-icon"><ClipboardList size={18} /></span> My Attendance
           </button>
-          <button className={`nav-item ${activeTab === 'courses' ? 'active' : ''}`} onClick={() => { setActiveTab('courses'); setIsSidebarOpen(false); }}>
+          <button className={`nav-item ${activeTab === 'courses' ? 'active' : ''}`} onClick={() => setActiveTab('courses')}>
             <span className="nav-icon"><BookOpen size={18} /></span> My Courses
           </button>
-          <button className={`nav-item ${activeTab === 'profile' ? 'active' : ''}`} onClick={() => { setActiveTab('profile'); setIsSidebarOpen(false); }}>
+          <button className={`nav-item ${activeTab === 'profile' ? 'active' : ''}`} onClick={() => setActiveTab('profile')}>
             <span className="nav-icon"><User size={18} /></span> Profile
           </button>
         </nav>
         <div className="sidebar-footer">
           <div className="user-badge" style={{ flexDirection: 'column', alignItems: 'flex-start', padding: 16, border: 'none', background: 'transparent' }}>
             <button className="btn btn-ghost btn-block" style={{ justifyContent: 'flex-start', border: 'none', gap: 8 }} onClick={logout}>
-               <LogOut size={16} /> 
-               Logout
+               <LogOut size={16} /> Logout
             </button>
           </div>
         </div>
       </aside>
 
-      {/* Main Content */}
+      {/* ── Main Content ── */}
       <div className="main-content">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 40, borderBottom: '1px solid var(--border)', paddingBottom: 16 }}>
+        {/* Desktop top bar — hidden on mobile */}
+        <div className="desktop-topbar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 40, borderBottom: '1px solid var(--border)', paddingBottom: 16 }}>
            <div style={{ display: 'flex', gap: 24, fontSize: '0.9rem', color: 'var(--text-muted)' }}>
               <div><strong style={{color: 'var(--text-primary)'}}>Student Portal</strong><br/>{new Date().toLocaleDateString()}</div>
            </div>
-           <div 
-             style={{ display: 'flex', alignItems: 'center', gap: 16, cursor: 'pointer' }}
-             onClick={() => setActiveTab('profile')}
-           >
-              {user?.profile_picture ? (
-                <img src={api.defaults.baseURL + user.profile_picture} alt="Profile" style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--primary-light)' }} />
-              ) : (
-                <div className="user-avatar" style={{width: 32, height: 32}}>{initials}</div>
-              )}
+           <div style={{ display: 'flex', alignItems: 'center', gap: 16, cursor: 'pointer' }} onClick={() => setActiveTab('profile')}>
+              {user?.profile_picture
+                ? <img src={api.defaults.baseURL + user.profile_picture} alt="Profile" style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--primary-light)' }} />
+                : <div className="user-avatar" style={{width: 32, height: 32}}>{initials}</div>
+              }
               <span style={{ fontWeight: 600 }}>{user?.full_name}</span>
            </div>
         </div>
@@ -479,8 +474,45 @@ const StudentDashboard = () => {
          </div>
       )}
 
+      {/* ── MOBILE: Bottom tab navigation ── */}
+      <nav className="bottom-nav" aria-label="Main navigation">
+        <button
+          className={`bottom-nav-item ${activeTab === 'overview' ? 'active' : ''}`}
+          onClick={() => setActiveTab('overview')}
+          aria-label="Overview"
+        >
+          <BarChart2 size={22} />
+          <span>Home</span>
+        </button>
+        <button
+          className={`bottom-nav-item ${activeTab === 'attendance' ? 'active' : ''}`}
+          onClick={() => setActiveTab('attendance')}
+          aria-label="Attendance"
+        >
+          <ClipboardList size={22} />
+          <span>Attendance</span>
+        </button>
+        <button
+          className={`bottom-nav-item ${activeTab === 'courses' ? 'active' : ''}`}
+          onClick={() => setActiveTab('courses')}
+          aria-label="Courses"
+        >
+          <BookOpen size={22} />
+          <span>Courses</span>
+        </button>
+        <button
+          className={`bottom-nav-item ${activeTab === 'profile' ? 'active' : ''}`}
+          onClick={() => setActiveTab('profile')}
+          aria-label="Profile"
+        >
+          <User size={22} />
+          <span>Profile</span>
+        </button>
+      </nav>
+
     </div>
   );
+
 };
 
 export default StudentDashboard;

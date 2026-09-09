@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import { BarChart2, ClipboardList, GraduationCap, BookOpen, LogOut, Camera, Trash2, Download, CheckCircle2, XCircle, TrendingUp, Users, Activity, User, Upload, Menu } from 'lucide-react';
+﻿import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import { BarChart2, ClipboardList, GraduationCap, BookOpen, LogOut, Camera, Trash2, Download, CheckCircle2, XCircle, TrendingUp, Users, Activity, User, Upload } from 'lucide-react';
 import { useAuth } from './AuthContext';
 import api from './api';
 import Webcam from 'react-webcam';
@@ -10,7 +10,6 @@ import {
 const AdminDashboard = ({ onOpenKiosk }) => {
   const { user, logout } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [stats, setStats] = useState({});
   const [students, setStudents] = useState([]);
   const [courses, setCourses] = useState([]);
@@ -344,75 +343,70 @@ const AdminDashboard = ({ onOpenKiosk }) => {
 
   return (
     <div className="app-layout">
-      {/* Mobile Header */}
+
+      {/* â”€â”€ MOBILE: Fixed top header â”€â”€ */}
       <div className="mobile-header">
-        <div className="brand" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <div className="brand-icon" style={{ width: '32px', height: '32px', fontSize: '1rem' }}>TP</div>
-          <div className="brand-text" style={{ fontSize: '1.1rem', fontWeight: 800 }}>Tech<span style={{ color: 'var(--primary)' }}>Phantom</span></div>
+        <div className="mh-brand">
+          <div className="mh-logo">TP</div>
+          <div className="mh-title">Tech<span>Phantom</span></div>
         </div>
-        <button className="btn btn-ghost" style={{ padding: '8px' }} onClick={() => setIsSidebarOpen(true)}>
-          <Menu size={24} />
-        </button>
+        <div className="mh-right">
+          <div className="mh-avatar" onClick={() => setActiveTab('profile')}>
+            {user?.profile_picture
+              ? <img src={api.defaults.baseURL + user.profile_picture} alt="Profile" />
+              : initials
+            }
+          </div>
+        </div>
       </div>
 
-      {/* Sidebar Overlay */}
-      <div 
-        className={`sidebar-overlay ${isSidebarOpen ? 'open' : ''}`} 
-        onClick={() => setIsSidebarOpen(false)}
-      ></div>
-
-      {/* Sidebar */}
-      <aside className={`sidebar ${isSidebarOpen ? 'open' : ''}`}>
+      {/* â”€â”€ DESKTOP: Fixed sidebar â”€â”€ */}
+      <aside className="sidebar">
         <div className="sidebar-header">
-          <div className="brand" onClick={() => window.location.href = '/'} style={{ cursor: 'pointer' }}>
+          <div className="brand" style={{ cursor: 'pointer' }}>
             <div className="brand-icon">TP</div>
             <div className="brand-text">Tech<span>Phantom</span></div>
           </div>
         </div>
         <nav className="sidebar-nav">
-          <button className={`nav-item ${activeTab === 'overview' ? 'active' : ''}`} onClick={() => { setActiveTab('overview'); setIsSidebarOpen(false); }}>
+          <button className={`nav-item ${activeTab === 'overview' ? 'active' : ''}`} onClick={() => setActiveTab('overview')}>
             <span className="nav-icon"><BarChart2 size={18} /></span> Dashboard
           </button>
-          <button className={`nav-item ${activeTab === 'attendance' ? 'active' : ''}`} onClick={() => { setActiveTab('attendance'); setIsSidebarOpen(false); }}>
-            <span className="nav-icon"><ClipboardList size={18} /></span> Attendance List
+          <button className={`nav-item ${activeTab === 'attendance' ? 'active' : ''}`} onClick={() => setActiveTab('attendance')}>
+            <span className="nav-icon"><ClipboardList size={18} /></span> Attendance
           </button>
-          <button className={`nav-item ${activeTab === 'students' ? 'active' : ''}`} onClick={() => { setActiveTab('students'); setIsSidebarOpen(false); }}>
+          <button className={`nav-item ${activeTab === 'students' ? 'active' : ''}`} onClick={() => setActiveTab('students')}>
             <span className="nav-icon"><GraduationCap size={18} /></span> Students
           </button>
-          <button className={`nav-item ${activeTab === 'courses' ? 'active' : ''}`} onClick={() => { setActiveTab('courses'); setIsSidebarOpen(false); }}>
+          <button className={`nav-item ${activeTab === 'courses' ? 'active' : ''}`} onClick={() => setActiveTab('courses')}>
             <span className="nav-icon"><BookOpen size={18} /></span> Courses
           </button>
-          <button className={`nav-item ${activeTab === 'profile' ? 'active' : ''}`} onClick={() => { setActiveTab('profile'); setIsSidebarOpen(false); }}>
+          <button className={`nav-item ${activeTab === 'profile' ? 'active' : ''}`} onClick={() => setActiveTab('profile')}>
             <span className="nav-icon"><User size={18} /></span> Profile
           </button>
         </nav>
         <div className="sidebar-footer">
           <div className="user-badge" style={{ flexDirection: 'column', alignItems: 'flex-start', padding: 16, border: 'none', background: 'transparent' }}>
             <button className="btn btn-ghost btn-block" style={{ justifyContent: 'flex-start', border: 'none', gap: 8 }} onClick={logout}>
-               <LogOut size={16} /> 
-               Logout
+               <LogOut size={16} /> Logout
             </button>
           </div>
         </div>
       </aside>
 
-      {/* Main Content */}
+      {/* â”€â”€ Main Content â”€â”€ */}
       <div className="main-content" style={{ background: 'var(--bg-primary)' }}>
-        {/* Top Navbar Area */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 40, borderBottom: '1px solid var(--border)', paddingBottom: 16 }}>
+        {/* Desktop top bar â€” hidden on mobile via .desktop-topbar class */}
+        <div className="desktop-topbar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 40, borderBottom: '1px solid var(--border)', paddingBottom: 16 }}>
            <div style={{ display: 'flex', gap: 24, fontSize: '0.9rem', color: 'var(--text-muted)' }}>
-              <div><strong style={{color: 'var(--text-primary)'}}>Attendance</strong><br/>{new Date().toLocaleDateString()}</div>
+              <div><strong style={{color: 'var(--text-primary)'}}>Admin Dashboard</strong><br/>{new Date().toLocaleDateString()}</div>
            </div>
-           <div 
-             style={{ display: 'flex', alignItems: 'center', gap: 16, cursor: 'pointer' }}
-             onClick={() => setActiveTab('profile')}
-           >
-              {user?.profile_picture ? (
-                <img src={api.defaults.baseURL + user.profile_picture} alt="Profile" style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--primary-light)' }} />
-              ) : (
-                <div className="user-avatar" style={{width: 32, height: 32}}>{initials}</div>
-              )}
-              <span style={{ fontWeight: 600 }}>{user?.full_name}</span>
+           <div style={{ display: 'flex', alignItems: 'center', gap: 16, cursor: 'pointer' }} onClick={() => setActiveTab('profile')}>
+               {user?.profile_picture
+                 ? <img src={api.defaults.baseURL + user.profile_picture} alt="Profile" style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--primary-light)' }} />
+                 : <div className="user-avatar" style={{width: 32, height: 32}}>{initials}</div>
+               }
+               <span style={{ fontWeight: 600 }}>{user?.full_name}</span>
            </div>
         </div>
 
@@ -638,9 +632,9 @@ const AdminDashboard = ({ onOpenKiosk }) => {
                            <div className="user-avatar" style={{width: 38, height: 38, fontSize: '0.85rem', background: 'var(--bg-primary)', color: 'var(--text-primary)', border: '1px solid var(--border)'}}>{log.student_name[0]}</div>
                            <div style={{ flex: 1, minWidth: 0 }}>
                               <div style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{log.student_name}</div>
-                              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{log.course_code} • {new Date(log.timestamp).toLocaleDateString()} {new Date(log.timestamp).toLocaleTimeString()}</div>
+                              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{log.course_code} â€¢ {new Date(log.timestamp).toLocaleDateString()} {new Date(log.timestamp).toLocaleTimeString()}</div>
                            </div>
-                           <span style={{ fontSize: '0.8rem', color: log.status === 'present' || log.status === 'On Time' ? 'var(--success)' : 'var(--secondary)', fontWeight: 600 }}>• {log.status}</span>
+                           <span style={{ fontSize: '0.8rem', color: log.status === 'present' || log.status === 'On Time' ? 'var(--success)' : 'var(--secondary)', fontWeight: 600 }}>â€¢ {log.status}</span>
                         </div>
                      ))}
                      {attendance.length === 0 && <div style={{ textAlign: 'center', color: 'var(--text-muted)', paddingTop: 40 }}>No activity recorded yet.</div>}
@@ -694,8 +688,8 @@ const AdminDashboard = ({ onOpenKiosk }) => {
                               <td style={{ color: 'var(--text-muted)', fontWeight: 500 }}>{r.roll_number}</td>
                               <td>{r.course_code}</td>
                               <td>{new Date(r.timestamp).toLocaleDateString()} {new Date(r.timestamp).toLocaleTimeString()}</td>
-                              <td><span style={{ color: 'var(--success)', fontWeight: 600 }}>• {r.status}</span></td>
-                              <td>{r.confidence ? `${(r.confidence * 100).toFixed(0)}%` : '—'}</td>
+                              <td><span style={{ color: 'var(--success)', fontWeight: 600 }}>â€¢ {r.status}</span></td>
+                              <td>{r.confidence ? `${(r.confidence * 100).toFixed(0)}%` : 'â€”'}</td>
                            </tr>
                         ))}
                      </tbody>
@@ -907,12 +901,12 @@ const AdminDashboard = ({ onOpenKiosk }) => {
                <div className="input-group" style={{ marginBottom: 24 }}>
                   <label>Select Course</label>
                   <select className="input" value={sessionCourseId} onChange={e => setSessionCourseId(e.target.value)} required>
-                     <option value="">— Choose a course —</option>
-                     {courses.map(c => <option key={c.id} value={c.id}>{c.course_code} — {c.course_name}</option>)}
+                     <option value="">â€” Choose a course â€”</option>
+                     {courses.map(c => <option key={c.id} value={c.id}>{c.course_code} â€” {c.course_name}</option>)}
                   </select>
                </div>
                 <button className="btn btn-primary btn-block btn-lg" onClick={() => handleStartSession(sessionCourseId)} disabled={!sessionCourseId}>
-                   📸 Initialize Scanner
+                   ðŸ“¸ Initialize Scanner
                 </button>
             </div>
          </div>
@@ -930,7 +924,7 @@ const AdminDashboard = ({ onOpenKiosk }) => {
                   <Webcam audio={false} ref={webcamRef} screenshotFormat="image/jpeg" width="100%" videoConstraints={{ facingMode: 'user', width: 480, height: 360 }} />
                </div>
                <button className="btn btn-primary btn-block btn-lg" onClick={handleFaceCaptureWebcam} disabled={faceUploading}>
-                  {faceUploading ? 'Capturing...' : '📸 Capture Face'}
+                  {faceUploading ? 'Capturing...' : 'ðŸ“¸ Capture Face'}
                </button>
             </div>
          </div>
@@ -1051,8 +1045,55 @@ const AdminDashboard = ({ onOpenKiosk }) => {
          </div>
       )}
 
-     </div>
+      </div>
+
+      {/* â”€â”€ MOBILE: Bottom tab navigation â”€â”€ */}
+      <nav className="bottom-nav" aria-label="Main navigation">
+        <button
+          className={`bottom-nav-item ${activeTab === 'overview' ? 'active' : ''}`}
+          onClick={() => setActiveTab('overview')}
+          aria-label="Dashboard"
+        >
+          <BarChart2 size={22} />
+          <span>Home</span>
+        </button>
+        <button
+          className={`bottom-nav-item ${activeTab === 'attendance' ? 'active' : ''}`}
+          onClick={() => setActiveTab('attendance')}
+          aria-label="Attendance"
+        >
+          <ClipboardList size={22} />
+          <span>Logs</span>
+        </button>
+        <button
+          className={`bottom-nav-item ${activeTab === 'students' ? 'active' : ''}`}
+          onClick={() => setActiveTab('students')}
+          aria-label="Students"
+        >
+          <GraduationCap size={22} />
+          <span>Students</span>
+        </button>
+        <button
+          className={`bottom-nav-item ${activeTab === 'courses' ? 'active' : ''}`}
+          onClick={() => setActiveTab('courses')}
+          aria-label="Courses"
+        >
+          <BookOpen size={22} />
+          <span>Courses</span>
+        </button>
+        <button
+          className={`bottom-nav-item ${activeTab === 'profile' ? 'active' : ''}`}
+          onClick={() => setActiveTab('profile')}
+          aria-label="Profile"
+        >
+          <User size={22} />
+          <span>Profile</span>
+        </button>
+      </nav>
+
+    </div>
   );
 };
 
 export default AdminDashboard;
+
