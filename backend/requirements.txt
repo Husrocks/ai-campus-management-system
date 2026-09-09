@@ -3,7 +3,7 @@ uvicorn
 websockets
 sqlalchemy
 # face_recognition (Commented out to bypass dlib compilation)
-opencv-python-headless
+opencv-contrib-python-headless
 python-multipart
 numpy
 pydantic

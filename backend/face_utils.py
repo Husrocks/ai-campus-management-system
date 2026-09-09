@@ -20,8 +20,14 @@ except Exception:
     model = None
     print("[WARNING] YOLOv8 not available. Person detection disabled.")
 
-# OpenCV face detector fallback
-face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+# OpenCV face detector fallback — guard against headless builds that lack CascadeClassifier
+try:
+    face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+    OPENCV_CASCADE_AVAILABLE = True
+except Exception:
+    face_cascade = None
+    OPENCV_CASCADE_AVAILABLE = False
+    print("[WARNING] cv2.CascadeClassifier unavailable. OpenCV face-detection fallback disabled.")
 
 
 def get_face_encoding(image_bytes: bytes):
@@ -49,6 +55,8 @@ def get_face_encoding(image_bytes: bytes):
                     }
         else:
             # Fallback: OpenCV Haar cascade + histogram encoding
+            if not OPENCV_CASCADE_AVAILABLE or face_cascade is None:
+                return None
             gray = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2GRAY)
             faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(80, 80))
 
