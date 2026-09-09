@@ -154,7 +154,9 @@ def match_face(unknown_encoding: np.ndarray, known_encodings: list, tolerance: f
         distances = np.array(
             [np.linalg.norm(known - unknown_encoding) for known in known_encodings]
         )
-        matches = [d < 0.6 for d in distances]
+        # For histogram-based, distance can be up to 1.414.
+        # We increase tolerance to 1.15 so the demo successfully registers faces.
+        matches = [d < 1.15 for d in distances]
 
     if not any(matches):
         return None

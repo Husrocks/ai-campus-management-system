@@ -2,7 +2,7 @@ fastapi
 uvicorn
 websockets
 sqlalchemy
-face_recognition
+# face_recognition (Commented out because HF spaces times out compiling dlib)
 opencv-contrib-python-headless
 mediapipe
 python-multipart
