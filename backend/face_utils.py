@@ -33,16 +33,17 @@ except Exception:
 
 # ── Tier 4: OpenCV Haar cascade ───────────────────────────────────────────────
 try:
-    face_cascade = cv2.CascadeClassifier(
-        cv2.data.haarcascades + 'haarcascade_frontalface_default.xml'
-    )
+    import os
+    cascade_path = os.path.join(os.path.dirname(__file__), 'haarcascade_frontalface_default.xml')
+    face_cascade = cv2.CascadeClassifier(cascade_path)
+    
     if face_cascade.empty():
         face_cascade = None
         OPENCV_CASCADE_AVAILABLE = False
-        print("[WARNING] cv2.CascadeClassifier empty (XML not found).")
+        print("[WARNING] cv2.CascadeClassifier empty (Local XML not found).")
     else:
         OPENCV_CASCADE_AVAILABLE = True
-        print("[OK] OpenCV Haar cascade loaded.")
+        print("[OK] OpenCV Haar cascade loaded from local file.")
 except Exception:
     face_cascade = None
     OPENCV_CASCADE_AVAILABLE = False
